@@ -1,0 +1,153 @@
+DIA,,Servicios Calama,,,,
+,DIRECCION,ORIGEN,DESTINO,HORA SALIDA,DESCRIPCION,RECORRIDO
+DOMINGO,Subida,AEROPUERTO CALAMA,CENTINELA OXIDO/SULFURO,22:00,Subida Administrativo Calama,Aeropuerto - Oxido/Sulfuro
+LUNES,Subida,CALAMA TER RECORRIDO,CENTINELA OXIDO/SULFURO,5:45 (*),Subida Administrativo Calama,Terminal Balmaceda (Pullman) - Sub Agencia - Aeropuerto - Oxido/Sulfuro (*) Inicio recorrido
+,Subida,AEROPUERTO CALAMA,CENTINELA SULFURO,7:00,Subida Administrativo Calama,Aeropuerto - Sulfuro
+,Subida,AEROPUERTO CALAMA,CENTINELA OXIDO/SULFURO,7:30,Subida Administrativo Calama,Aeropuerto - Sulfuro/Oxido
+,Subida,AEROPUERTO CALAMA,CENTINELA OXIDO/SULFURO,7:45,Subida Administrativo Calama,Aeropuerto - Sulfuro/Oxido
+,Subida,CALAMA TERMINAL AEROPUERTO,CENTINELA OXIDO/SULFURO,18:30,Subida Planta ,Aeropuerto - Sulfuro/Oxido
+,Sunidad ,CALAMA TERMINAL AEROPUERTO,CENTINELA OXIDO/SULFURO,22:15,Subida Planta ,Terminal Balmaceda (Pullman) - Sub Agencia - Aeropuerto - Oxido/Sulfuro
+,Subida,AEROPUERTO CALAMA,CENTINELA OXIDO/SULFURO,22:45,Subida Planta,Terminal Balmaceda (Pullman) - Aeropuerto - Oxido/Sulfuro
+,Bajada,CENTINELA SULFURO,AEROPUERTO CALAMA,20:00,Bajada Planta,Sulfuro- Aeropuerto
+,Bajada,CENTINELA SULFURO,AEROP TERM CALAMA,21:00,Bajada Planta,Sulfuro - Oxido - Aeropuerto - Terminal Balmaceda (Pullman)
+MARTES,Subida,CALAMA TERMINAL AEROPUERTO,CENTINELA OXIDO/SULFURO,12:00,Subida Turno Mina,Terminal Balmaceda (Pullman) - Sub Agencia - Aeropuerto - Oxido/Sulfuro
+,Subida,CALAMA TERMINAL AEROPUERTO,CENTINELA OXIDO/SULFURO,16:30,Subida Turno Mina,Terminal Balmaceda (Pullman) - Sub Agencia - Aeropuerto - Oxido/Sulfuro
+,Subida,AEROPUERTO CALAMA,CENTINELA SULFURO,17:00,Subida Turno Mina,Aeropuerto - Sulfuro
+,Subida,CALAMA TERMINAL AEROPUERTO,CENTINELA SULFURO,22:00,Subida Turno Mina,Terminal Balmaceda (Pullman) - Sub agencia - Aeropuerto - Sulfuro
+,Subida,AEROPUERTO CALAMA,CENTINELA OXIDO/SULFURO,22:45,Subida Turno Mina,Aeropuerto - Oxido/Sulfuro
+,Subida,AEROPUERTO CALAMA,CENTINELA OXIDO/SULFURO,22:45,Subida Turno Mina,Aeropuerto - Oxido/Sulfuro
+,Bajada,CENTINELA SULFURO,ADM CALAMA TERMINAL,8:30,Bajada Planteros Turno Noche,Sulfuro - Aeropuerto- Sub Agencia - Terminal Balmaceda (Pullman)
+,Bajada,CENTINELA SULFURO,AEROP TERM CALAMA,20:00,Bajada Turno Mina,Sulfuro - Aeropuerto 
+,Bajada,CENTINELA SULFURO,AEROP TERM CALAMA,20:00,Bajada Turno Mina,Sulfuro - Aeropuerto - Sub Agencia - Terminal Balmaceda (Pullman)
+,Bajada,CENTINELA OXIDO,ADM CALAMA TERMINAL,20:15,Bajada Turno Mina,Oxido - Aeropuerto - Sub Agencia - Terminal Balmaceda (Pullman) - Recorrido
+,Bajada,CENTINELA SULFURO,CALAMA TERM AEROPTO,21:00,Bajada Turno Mina,Sulfuro - Aeropuerto - Sub Agencia - Terminal Balmaceda (Pullman) - Recorrido
+MIERCOLES,Subida,CALAMA TERMINAL ,CENTINELA OXIDO/SULFURO,4:00 (*),Subida Turno Mina,Recorrido - Terminal Balmaceda (Pullman) - Sub Agencia - Oxido/Sulfuro (*) Inicio recorrido
+,Subida,CALAMA TERMINAL AEROPUERTO,CENTINELA OXIDO/SULFURO,12:00,Subida Turno Mina,Terminal Balmaceda (Pullman) - Sub Agencia - Aeropuerto - Oxido/Sulfuro
+,Subida,AEROPUERTO CALAMA,CENTINELA OXIDO/SULFURO,13:00,Subida Turno Mina,Terminal Balmaceda (Pullman) - Sub Agencia - Aeropuerto - Oxido/Sulfuro
+,Subida,CALAMA TERMINAL AEROPUERTO,CENTINELA OXIDO/SULFURO,15:00,Subida Turno Mina,Terminal Balmaceda (Pullman) - Sub Agencia - Aeropuerto - Oxido/Sulfuro
+,Subida,AEROPUERTO CALAMA,CENTINELA OXIDO/SULFURO,15:30,Subida Turno Mina,Terminal Balmaceda (Pullman) - Sub Agencia - Aeropuerto - Oxido/Sulfuro
+,Subida,CALAMA TERMINAL AEROPUERTO,CENTINELA SULFURO,16:30,Subida Turno Mina,Terminal Balmaceda (Pullman) - Sub Agencia - Aeropuerto - Sulfuro
+,Bajada,CENTINELA OXIDO,AEROP TERM CALAMA,8:15,Bajada Turno nochero mina,Oxidos - Aeropuerto - Terminal Balmaceda (Pullman) - Recorrido
+,Bajada,CENTINELA SULFURO,CALAMA TERMINAL RECORRIDO,9:00,Bajada Turno nochero mina,Sulfuro - Sub Agencia - Terminal Balmaceda (Pullman) - Recorrido
+,Bajada,CENTINELA SULFURO,CALAMA AEROPUERTO ,9:00,Bajada Turno nochero mina,Sulfuro - Aeropuerto - Sub Agencia - Terminal Balmaceda (Pullman) - Recorrido
+,Bajada,CENTINELA SULFURO,CALAMA TERM AEROPTO,17:00,Bajada Turno nochero mina,Sulfuro - Aeropuerto - Sub Agencia - Terminal Balmaceda (Pullman) - Recorrido
+JUEVES,Bajada,CENTINELA SULFURO,AEROPUERTO CALAMA,15:00,Bajada Administrativos Calama,Sulfuro - Aeropuerto - Sub Agencia - Terminal Balmaceda (Pullman) - Recorrido
+,Bajada,CENTINELA SULFURO,CALAMA TER RECORRIDO,15:00,Bajada Administrativos Calama,Sulfuro - Aeropuerto
+,Bajada,CENTINELA OXIDO,CALAMA TERM AEROPTO,15:00,Bajada Administrativos Calama,Sulfuro - Aeropuerto - Sub Agencia - Terminal Balmaceda (Pullman)
+VIERNES,Sin Servicio,,,,,
+SABADO,Sin Servicio,,,,,
+,,,,,,
+DIA,,Servicios Antofagasta ,,,,
+,DIRECCION,ORIGEN,DESTINO,HORA SALIDA,DESCRIPCION,RECORRIDO
+LUNES,Subida,ANTOFAGASTA NORTE,CENTINELA SULFURO,5:15,Subida Administrativo,Recorrido - Sulfuro
+,Subida,ANTOFAGASTA SUR,CENTINELA SULFURO,5:15,Subida Administrativo,Recorrido - Sulfuro
+,Subida,ANTOFAGASTA TERMINAL 1,CENTINELA OXIDO/SULFURO,6:10,Subida Administrativo,Terminal - Sulfuro
+,Subida,ANTOFAGASTA TERMINAL 2,CENTINELA OXIDO/SULFURO,6:10,Subida Administrativo,Terminal - Sulfuro
+,Subida,ANTOFAGASTA NORTE,CENTINELA SULFURO,21:00,Subida Turno Planta,Recorrido - Sulfuro
+,Subida,ANTOFAGASTA SUR/TERMINAL,CENTINELA OXIDO/SULFURO,21:00,Subida Turno Planta,Recorrido - Oxido/Sulfuro (Aeropuerto previa inscripción @serviciopersonas)
+,Bajada,CENTINELA SULFURO,ANTOFAGASTA NORTE/SUR,21:00,Bajada Turno Planta,Sulfuro - Recorrido Antofagasta
+,Bajada,CENTINELA SULFURO,ANTOFAGASTA TERMINAL,21:00,Bajada Turno Planta,Sulfuro - Terminal
+MARTES,Subida,ANTOFAGASTA TERMINAL,CENTINELA SULFURO,4:00,Subida Servicio Planta,Terminal Buses - Sulfuro
+,Subida,ANTOFAGASTA TERMINAL,CENTINELA SULFURO,11:00,Subida Servicio Planta,Terminal Buses - Sulfuro
+,Subida,ANTOFAGASTA TERMINAL,CENTINELA SULFURO,15:40,Subida Servicio Planta Sur-Terminal,Terminal - Sulfuro - (Aeropuerto previa inscripción @serviciopersonas)
+,Subida,ANTOFAGASTA NORTE,CENTINELA SULFURO,15:40,Subida Servicio Planta Norte,Recorrido - Sulfuro
+,Subida,AEROPUERTO ANTOFAGASTA,CENTINELA OXIDO/SULFURO,16:00,Subida Servicio Planta Norte,Aeropuerto Antofagasta - Oxido - Sulfuro
+,Subida,ANTOFAGASTA NORTE,CENTINELA SULFURO,21:00,Subida Turno Mina,Recorrido - Sulfuro
+,Subida,ANTOFAGASTA NORTE,CENTINELA SULFURO,21:00,Subida Turno Mina,Recorrido - Sulfuro
+,Subida,ANTOFAGASTA TERMINAL 1,CENTINELA SULFURO,21:00,Subida Turno Mina,Terminal - Sulfuro
+,Subida,ANTOFAGASTA TERMINAL 2,CENTINELA SULFURO,21:00,Subida Turno Mina,Terminal - Sulfuro
+,Subida,ANTF TERM AEROPUER,CENTINELA SULFURO,21:00,Subida Turno Mina,Terminal - Aeropuerto Antofagasta - Sulfuro
+,Subida,ANTOFAGASTA SUR,CENTINELA OXIDO,22:00,Subida Turno Mina,Recorrido - Oxido
+,Subida,ANTOFAGASTA NORTE,CENTINELA OXIDO,22:00,Subida Turno Mina,Recorrido - Oxido
+,Bajada,CENTINELA SULFURO,ANTOFAGASTA NORTE,9:00,Bajada Turno Planta,Sulfuro - Recorrido
+,Bajada,CENTINELA SULFURO,ANTOFAGASTA TERMINAL,9:00,Bajada Turno Planta,Sulfuro - Terminal
+,Bajada,CENTINELA OXIDO,ANTOFAGASTA NORTE,20:15,Bajada Turno Mina,Oxido - Recorrido
+,Bajada,CENTINELA OXIDO,ANTOFAGASTA TERMINAL,20:15,Bajada Turno Mina,Bajada Oxido - Terminal
+,Bajada,CENTINELA SULFURO,ANTOFAGASTA TERMINAL,21:00,Bajada Turno Mina,Sulfuro - Terminal 
+,Bajada,CENTINELA SULFURO,ANTOFAGASTA AEROPUERTO ,21:00,Bajada Turno Mina,Sulfuro - Aeropuerto 
+,Bajada,CENTINELA SULFURO,ANTOFAGASTA NORTE,21:00,Bajada Turno Mina,Sulfuro - Recorrido
+,Bajada,CENTINELA SULFURO,ANTOFAGASTA NORTE,21:00,Bajada Turno Mina,Sulfuro - Recorrido
+,Bajada,CENTINELA SULFURO,ANTOFAGASTA SUR,21:00,Bajada Turno Mina,Sulfuro - Recorrido
+MIERCOLES,Subida,ANTOFAGASTA NORTE,CENTINELA SULFURO,4:00,Subida Turno Mina,Recorrido - Sulfuro
+,Subida,ANTOFAGASTA TERMINAL,CENTINELA SULFURO,4:00,Subida Turno Mina,Terminal - Sulfuro
+,Subida,ANTOFAGASTA TERMINAL,CENTINELA SULFURO,11:00,Subida Turno Mina,Terminal - Sulfuro
+,Subida,ANTOFAGASTA TERMINAL 2,CENTINELA SULFURO,11:00,Subida Turno Mina,Terminal - Sulfuro
+,Subida,ANTOFAGASTA NORTE,CENTINELA OXIDO,12:00,Subida Turno Mina,Recorrido - Oxido
+,Subida,ANTOFAGASTA NORTE,CENTINELA OXIDO,15:00,Subida Turno Mina,Recorrido - Oxido/Sulfuro
+,Subida,ANTOFAGASTA NORTE,CENTINELA SULFURO,15:40,Subida Turno Mina,Recorrido - Sulfuro
+,Subida,ANTOFAGASTA TERMINAL,CENTINELA SULFURO,15:40,Subida Turno Mina,Terminal - Sulfuro
+,Subida,AEROPUERTO ANTOFAGASTA,CENTINELA SULFUROS,16:00,Subida Turno Mina,Aeropuerto - Sulfuros
+,Bajada,CENTINELA OXIDO,ANTOFAGASTA NORTE,8:15,Bajada Turno Mina,Oxido - Recorrido
+,Bajada,CENTINELA OXIDO,ANTOFAGASTA TERMINAL,8:15,Bajada Turno Mina,Oxido - Terminal - Aeropuerto
+,Bajada,CENTINELA SULFURO,ANTOFAGASTA NORTE,9:00,Bajada Turno Mina,Sulfuro - Recorrido
+,Bajada,CENTINELA SULFURO,ANTOFAGASTA SUR,9:00,Bajada Turno Mina,Sulfuro - Recorrido
+,Bajada,CENTINELA SULFURO,ANTOFAGASTA AEROPUERTO ,9:00,Bajada Turno Mina,Sulfuro - Aeropuerto 
+,Bajada,CENTINELA SULFURO,ANTOFAGASTA TERMINAL,9:00,Bajada Turno Mina,Sulfuro - Terminal
+,Bajada,CENTINELA SULFURO,ANTOFAGASTA AEROPURTO-TERMINAL,9:00,Bajada Turno Mina,Sulfuro - Terminal
+JUEVES,Bajada,CENTINELA SULFURO/OXIDO,ANTOFAGASTA NORTE,15:00,Bajada Administrativo,Sulfuro - Recorrido
+,Bajada,CENTINELA SULFURO/OXIDO,ANTOFAGASTA SUR,15:00,Bajada Administrativo,Sulfuro - Recorrido
+,Bajada,CENTINELA SULFURO/OXIDO,ANTOFAGASTA AEROPUERTO ,15:00,Bajada Turno Mina,Sulfuro - Aeropuerto 
+,Bajada,CENTINELA SULFURO/OXIDO,ANTOFAGASTA TERMINAL,15:00,Bajada Administrativo,Sulfuro - Aeropuerto - Terminal
+VIERNES,,Sin Servicio,,,,
+SABADO,,Sin Servicio,,,,
+,,,,,,
+DIA,,Servicios Muelle ,,,,
+,DIRECCION,ORIGEN,DESTINO,HORA SALIDA,DESCRIPCION,RECORRIDO
+LUNES,Subida,ANTOFAGASTA SUR,MUELLE CENTINELA ,5:00,Subida Operativos ,Recorrido - Muelle
+,Subida,ANTOFAGASTA TERMINAL DE BUSES,MUELLE CENTINELA ,5:30,Subida Operativos ,Terminal de buses  - Recorrido - Muelle
+,subida,AEROPUERTO ANTOFAGASTA,MUELLE CENTINELA ,8:00,Subida Administrativos ,Aeropuertro Antofagasta - Muelle
+,Subida,ANTOFAGASTA SUR,MUELLE CENTINELA ,17:00,Subida Operativos ,Recorrido - Muelle
+,Subida,ANTOFAGASTA TERMINAL DE BUSES,MUELLE CENTINELA ,17:30,Subida Operativos ,Terminal de buses  - Recorrido - Muelle
+,Bajada,MUELLE CENTINELA ,ANTOFAGASTA SUR,8:00,Bajada Operativos,Muelle - Recorrido 
+,Bajada,MUELLE CENTINELA ,ANTOFAGASTA TERMINAL DE BUSES ,8:00,Bajada Operativos,Muelle - Recorrido - Terminal de Buses
+,Bajada,MUELLE CENTINELA ,ANTOFAGASTA SUR,20:00,Bajada Operativos,Muelle - Recorrido 
+,Bajada,MUELLE CENTINELA ,ANTOFAGASTA TERMINAL DE BUSES ,20:00,Bajada Operativos,Muelle - Recorrido - Terminal de Buses
+MARTES,Subida,ANTOFAGASTA SUR,MUELLE CENTINELA ,5:00,Subida Operativos ,Recorrido - Muelle
+,Subida,ANTOFAGASTA TERMINAL DE BUSES,MUELLE CENTINELA ,5:30,Subida Operativos ,Terminal de buses  - Recorrido - Muelle
+,Subida,ANTOFAGASTA SUR,MUELLE CENTINELA ,17:00,Subida Operativos ,Recorrido - Muelle
+,Subida,ANTOFAGASTA TERMINAL DE BUSES,MUELLE CENTINELA ,17:30,Subida Operativos ,Terminal de buses  - Recorrido - Muelle
+,Bajada,MUELLE CENTINELA ,ANTOFAGASTA SUR,8:00,Bajada Operativos,Muelle - Recorrido 
+,Bajada,MUELLE CENTINELA ,ANTOFAGASTA TERMINAL DE BUSES ,8:00,Bajada Operativos,Muelle - Recorrido - Terminal de Buses
+,Bajada,MUELLE CENTINELA ,ANTOFAGASTA SUR,20:00,Bajada Operativos,Muelle - Recorrido 
+,Bajada,MUELLE CENTINELA ,ANTOFAGASTA TERMINAL DE BUSES ,20:00,Bajada Operativos,Muelle - Recorrido - Terminal de Buses
+MIERCOLES,Subida,ANTOFAGASTA SUR,MUELLE CENTINELA ,5:00,Subida Operativos ,Recorrido - Muelle
+,Subida,ANTOFAGASTA TERMINAL DE BUSES,MUELLE CENTINELA ,5:30,Subida Operativos ,Terminal de buses  - Recorrido - Muelle
+,Subida,ANTOFAGASTA SUR,MUELLE CENTINELA ,17:00,Subida Operativos ,Recorrido - Muelle
+,Subida,ANTOFAGASTA TERMINAL DE BUSES,MUELLE CENTINELA ,17:30,Subida Operativos ,Terminal de buses  - Recorrido - Muelle
+,Bajada,MUELLE CENTINELA ,ANTOFAGASTA SUR,8:00,Bajada Operativos,Muelle - Recorrido 
+,Bajada,MUELLE CENTINELA ,ANTOFAGASTA TERMINAL DE BUSES ,8:00,Bajada Operativos,Muelle - Recorrido - Terminal de Buses
+,Bajada,MUELLE CENTINELA ,ANTOFAGASTA SUR,20:00,Bajada Operativos,Muelle - Recorrido 
+,Bajada,MUELLE CENTINELA ,ANTOFAGASTA TERMINAL DE BUSES ,20:00,Bajada Operativos,Muelle - Recorrido - Terminal de Buses
+JUEVES,Subida,ANTOFAGASTA SUR,MUELLE CENTINELA ,5:00,Subida Operativos ,Recorrido - Muelle
+,Subida,ANTOFAGASTA TERMINAL DE BUSES,MUELLE CENTINELA ,5:30,Subida Operativos ,Terminal de buses  - Recorrido - Muelle
+,Subida,ANTOFAGASTA SUR,MUELLE CENTINELA ,17:00,Subida Operativos ,Recorrido - Muelle
+,Subida,ANTOFAGASTA TERMINAL DE BUSES,MUELLE CENTINELA ,17:30,Subida Operativos ,Terminal de buses  - Recorrido - Muelle
+,Bajada,MUELLE CENTINELA ,ANTOFAGASTA SUR,8:00,Bajada Operativos,Muelle - Recorrido 
+,Bajada,MUELLE CENTINELA ,ANTOFAGASTA TERMINAL DE BUSES ,8:00,Bajada Operativos,Muelle - Recorrido - Terminal de Buses
+,Bajada,MUELLE CENTINELA ,ANTOFAGASTA AEROPUERTO - SUR ,16:00,Bajada Administartivos,Muelle - Aeropuerto Antofagasta  - Recorrido Sur
+,Bajada,MUELLE CENTINELA ,ANTOFAGASTA SUR,20:00,Bajada Operativos,Muelle - Recorrido 
+,Bajada,MUELLE CENTINELA ,ANTOFAGASTA TERMINAL DE BUSES ,20:00,Bajada Operativos,Muelle - Recorrido - Terminal de Buses
+VIERNES,Subida,ANTOFAGASTA SUR,MUELLE CENTINELA ,5:00,Subida Operativos ,Recorrido - Muelle
+,Subida,ANTOFAGASTA TERMINAL DE BUSES,MUELLE CENTINELA ,5:30,Subida Operativos ,Terminal de buses  - Recorrido - Muelle
+,Subida,ANTOFAGASTA SUR,MUELLE CENTINELA ,17:00,Subida Operativos ,Recorrido - Muelle
+,Subida,ANTOFAGASTA TERMINAL DE BUSES,MUELLE CENTINELA ,17:30,Subida Operativos ,Terminal de buses  - Recorrido - Muelle
+,Bajada,MUELLE CENTINELA ,ANTOFAGASTA SUR,8:00,Bajada Operativos,Muelle - Recorrido 
+,Bajada,MUELLE CENTINELA ,ANTOFAGASTA TERMINAL DE BUSES ,8:00,Bajada Operativos,Muelle - Recorrido - Terminal de Buses
+,Bajada,MUELLE CENTINELA ,ANTOFAGASTA SUR,20:00,Bajada Operativos,Muelle - Recorrido 
+,Bajada,MUELLE CENTINELA ,ANTOFAGASTA TERMINAL DE BUSES ,20:00,Bajada Operativos,Muelle - Recorrido - Terminal de Buses
+SABADO,Subida,ANTOFAGASTA SUR,MUELLE CENTINELA ,5:00,Subida Operativos ,Recorrido - Muelle
+,Subida,ANTOFAGASTA TERMINAL DE BUSES,MUELLE CENTINELA ,5:30,Subida Operativos ,Terminal de buses  - Recorrido - Muelle
+,Subida,ANTOFAGASTA SUR,MUELLE CENTINELA ,17:00,Subida Operativos ,Recorrido - Muelle
+,Subida,ANTOFAGASTA TERMINAL DE BUSES,MUELLE CENTINELA ,17:30,Subida Operativos ,Terminal de buses  - Recorrido - Muelle
+,Bajada,MUELLE CENTINELA ,ANTOFAGASTA SUR,8:00,Bajada Operativos,Muelle - Recorrido 
+,Bajada,MUELLE CENTINELA ,ANTOFAGASTA TERMINAL DE BUSES ,8:00,Bajada Operativos,Muelle - Recorrido - Terminal de Buses
+,Bajada,MUELLE CENTINELA ,ANTOFAGASTA SUR,20:00,Bajada Operativos,Muelle - Recorrido 
+,Bajada,MUELLE CENTINELA ,ANTOFAGASTA TERMINAL DE BUSES ,20:00,Bajada Operativos,Muelle - Recorrido - Terminal de Buses
+DOMINGO,Subida,ANTOFAGASTA SUR,MUELLE CENTINELA ,5:00,Subida Operativos ,Recorrido - Muelle
+,Subida,ANTOFAGASTA TERMINAL DE BUSES,MUELLE CENTINELA ,5:30,Subida Operativos ,Terminal de buses  - Recorrido - Muelle
+,Subida,ANTOFAGASTA SUR,MUELLE CENTINELA ,17:00,Subida Operativos ,Recorrido - Muelle
+,Subida,ANTOFAGASTA TERMINAL DE BUSES,MUELLE CENTINELA ,17:30,Subida Operativos ,Terminal de buses  - Recorrido - Muelle
+,Bajada,MUELLE CENTINELA ,ANTOFAGASTA SUR,8:00,Bajada Operativos,Muelle - Recorrido 
+,Bajada,MUELLE CENTINELA ,ANTOFAGASTA TERMINAL DE BUSES ,8:00,Bajada Operativos,Muelle - Recorrido - Terminal de Buses
+,Bajada,MUELLE CENTINELA ,ANTOFAGASTA SUR,20:00,Bajada Operativos,Muelle - Recorrido 
+,Bajada,MUELLE CENTINELA ,ANTOFAGASTA TERMINAL DE BUSES ,20:00,Bajada Operativos,Muelle - Recorrido - Terminal de Buses
