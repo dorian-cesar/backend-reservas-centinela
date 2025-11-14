@@ -22,4 +22,4 @@ const busLayoutSchema = new mongoose.Schema({
 });
 
 export default mongoose.model("BusLayout", busLayoutSchema);
-
+//comentario de prueba//
