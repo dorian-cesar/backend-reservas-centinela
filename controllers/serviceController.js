@@ -109,6 +109,98 @@ export const generateServices = async (req, res) => {
   }
 };
 
+export const generateOne = async (req, res) => {
+  try {
+    const templateId = req.params.id;
+    if (!templateId) {
+      return res.status(400).json({ error: "Debes enviar el id de la template en params" });
+    }
+
+    const t = await ServiceTemplate.findById(templateId);
+    if (!t) {
+      return res.status(404).json({ error: "Template no encontrada" });
+    }
+
+    const start = new Date(t.startDate);
+    const createdServices = [];
+
+    for (let i = 0; i < 14; i++) {
+      const currentDate = new Date(start);
+      currentDate.setDate(start.getDate() + i);
+
+      // convertir getDay() -> 1=Lunes ... 7=Domingo
+      const dayOfWeek = currentDate.getDay() === 0 ? 7 : currentDate.getDay();
+
+      if (!t.daysOfWeek.includes(dayOfWeek)) continue;
+
+      // ================================
+      // Cargar layout y generar asientos
+      // ================================
+      const layout = await BusLayout.findById(t.layout);
+      if (!layout) continue;
+
+      const seats = [];
+
+      // Piso 1
+      if (layout.floor1?.seatMap) {
+        layout.floor1.seatMap.forEach((row) => {
+          row.forEach((seat) => {
+            if (seat && seat !== "") {
+              seats.push({
+                seatNumber: seat,
+                floor: 1,
+                status: "available",
+                // si quieres la forma original (reserved/reservedBy) usa:
+                // reserved: false,
+                // reservedBy: null
+              });
+            }
+          });
+        });
+      }
+
+      // Piso 2
+      if (layout.floor2?.seatMap) {
+        layout.floor2.seatMap.forEach((row) => {
+          row.forEach((seat) => {
+            if (seat && seat !== "") {
+              seats.push({
+                seatNumber: seat,
+                floor: 2,
+                status: "available",
+              });
+            }
+          });
+        });
+      }
+
+      // Crear servicio generado
+      const newService = await GeneratedService.create({
+        template: t._id,
+        date: currentDate,
+        time: t.time,
+        origin: t.origin,
+        destination: t.destination,
+        busLayout: layout._id,
+        seats,
+      });
+
+      createdServices.push(newService);
+    }
+
+    res.json({
+      message: `Servicios generados exitosamente para la template ${templateId}`,
+      count: createdServices.length,
+      services: createdServices,
+    });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+};
+
+
+
+
 // ====================================================
 // Listar servicios generados
 // ====================================================
