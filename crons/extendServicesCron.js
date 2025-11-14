@@ -16,6 +16,8 @@ export default function startExtendServicesCron() {
         } catch (err) {
             console.error('[CRON-SERVICES] Error al extender servicios:', err);
         }
+    }, {
+        timezone: "America/Santiago"
     });
 
     console.log('[CRON-SERVICES] Cron de extensión de servicios iniciado');
