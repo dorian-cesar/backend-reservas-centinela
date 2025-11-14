@@ -8,6 +8,7 @@ import userRoutes from "./routes/userRoutes.js";
 import serviceRoutes from "./routes/serviceRoutes.js";
 import reservationRoutes from "./routes/reservationRoutes.js";
 import busLayoutRoutes from "./routes/busLayoutRoutes.js";
+import cityRoutes from "./routes/cityRoutes.js";
 
 dotenv.config();
 connectDB();
@@ -22,6 +23,7 @@ app.use("/api/users", userRoutes);
 app.use("/api/services", serviceRoutes);
 app.use("/api/reservations", reservationRoutes);
 app.use("/api/layouts", busLayoutRoutes);
+app.use("/api/cities", cityRoutes);
 
 const PORT = process.env.PORT || 4000;
 app.listen(PORT, () => console.log(`🚍 Servidor corriendo en puerto ${PORT}`));
