@@ -10,7 +10,7 @@ import serviceRoutes from "./routes/serviceRoutes.js";
 import reservationRoutes from "./routes/reservationRoutes.js";
 import busLayoutRoutes from "./routes/busLayoutRoutes.js";
 import cityRoutes from "./routes/cityRoutes.js";
-
+import mailRoutes from "./routes/mailroutes.js"
 
 
 dotenv.config();
@@ -26,6 +26,7 @@ app.use("/api/services", serviceRoutes);
 app.use("/api/reservations", reservationRoutes);
 app.use("/api/layouts", busLayoutRoutes);
 app.use("/api/cities", cityRoutes);
+app.use("/api/mail", mailRoutes);
 
 const PORT = process.env.PORT || 4000;
 
