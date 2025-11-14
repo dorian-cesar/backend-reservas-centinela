@@ -28,5 +28,5 @@ export const login = async (req, res) => {
     }
   );
 
-  res.json({ token, usershow });
+  res.json({ token, user: usershow });
 };
