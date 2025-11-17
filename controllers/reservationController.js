@@ -1,5 +1,7 @@
+import mongoose from "mongoose";
 import GeneratedService from "../models/GeneratedService.js";
 import Reservation from "../models/Reservation.js";
+import { sendReservationEmailNotification } from "../services/mailService.js";
 
 /**
  * @swagger
@@ -62,6 +64,10 @@ import Reservation from "../models/Reservation.js";
 export const makeReservation = async (req, res) => {
   try {
     const { userId, serviceId, seatNumber } = req.body;
+
+    if (!userId || !serviceId || !seatNumber) {
+      return res.status(400).json({ message: "userId, serviceId y seatNumber son requeridos" });
+    }
 
     const service = await GeneratedService.findById(serviceId);
     if (!service)
@@ -165,49 +171,70 @@ export const makeReservation = async (req, res) => {
 export const confirmReservation = async (req, res) => {
   try {
     const { reservationId, authorizationCode } = req.body;
+    if (!reservationId || !authorizationCode) {
+      return res.status(400).json({ message: "reservationId y authorizationCode son requeridos" });
+    }
 
     const reservation = await Reservation.findById(reservationId);
-    if (!reservation)
-      return res.status(404).json({ message: "Reserva no encontrada" });
+    if (!reservation) return res.status(404).json({ message: "Reserva no encontrada" });
+    if (reservation.status !== "reserved") return res.status(400).json({ message: "La reserva no está activa" });
 
-    if (reservation.status !== "reserved")
-      return res.status(400).json({ message: "La reserva no está activa" });
-
-    const service = await GeneratedService.findById(reservation.service);
-    const seat = service.seats.find(
-      (s) => s.seatNumber === reservation.seatNumber
-    );
-
-    if (!seat) return res.status(400).json({ message: "Asiento no existe" });
-
-    // Validar expiración
-    if (new Date() > new Date(reservation.expiresAt)) {
-      seat.reserved = false;
-      seat.reservedBy = null;
-      seat.reservationExpiresAt = null;
-      await service.save();
-
+    // Verificar expiración antes de intentar confirmar
+    if (reservation.expiresAt && new Date() > new Date(reservation.expiresAt)) {
       reservation.status = "expired";
       await reservation.save();
-
+      // Intentamos liberar asiento por seguridad (no crítico si falla)
+      await GeneratedService.updateOne(
+        { _id: reservation.service, "seats.seatNumber": reservation.seatNumber },
+        { $set: { "seats.$.reserved": false, "seats.$.reservedBy": null, "seats.$.reservationExpiresAt": null } }
+      );
       return res.status(400).json({ message: "La reserva expiró" });
     }
 
-    // Confirmar asiento
-    seat.confirmed = true;
-    seat.confirmedBy = reservation.user;
-    seat.reserved = true;
-    // seat.reservedBy = null;
+    const updateResult = await GeneratedService.updateOne(
+      {
+        _id: reservation.service,
+        "seats": {
+          $elemMatch: {
+            seatNumber: reservation.seatNumber,
+            reserved: true,
+            reservedBy: reservation.user, // requiere que reservedBy coincida
+            confirmed: { $ne: true } // solo si no está ya confirmado
+          }
+        }
+      },
+      {
+        $set: {
+          "seats.$.confirmed": true,
+          "seats.$.confirmedBy": reservation.user,
+          "seats.$.reserved": true,
+          "seats.$.reservedBy": reservation.user,
+          "seats.$.reservationExpiresAt": null
+        }
+      }
+    );
 
-    await service.save();
+    if (updateResult.modifiedCount === 0) {
+      // nadie actualizó: posible race o asiento no era del usuario
+      return res.status(400).json({ message: "No se pudo confirmar el asiento: ya fue tomado o no pertenece a la reserva" });
+    }
 
+    // Si llegamos acá, el asiento fue confirmado en el documento del servicio
     reservation.status = "confirmed";
     reservation.authorizationCode = authorizationCode;
     await reservation.save();
 
-    res.json({ message: "Reserva confirmada", reservation });
+    // Poblar para enviar correo
+    const populatedReservation = await Reservation.findById(reservation._id).populate("user").populate("service");
+
+    // Envío de correo asincrónico (no bloquea la respuesta)
+    sendReservationEmailNotification(populatedReservation)
+      .then(() => console.log(`Correo enviado para reserva ${reservation._id}`))
+      .catch((err) => console.error(`Error enviando correo para reserva ${reservation._id}:`, err));
+
+    res.json({ message: "Reserva confirmada", reservation: populatedReservation });
   } catch (error) {
-    console.error(error);
+    console.error("Error confirmReservationNoTxn:", error);
     res.status(500).json({ message: "Error interno" });
   }
 };

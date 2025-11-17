@@ -8,6 +8,7 @@ const reservationSchema = new mongoose.Schema({
   expiresAt: Date,
   releasedAt: Date,
   releaseReason: String,
+  authorizationCode: { type: String },
   status: {
     type: String,
     enum: ["reserved", "pending", "confirmed", "cancelled", "released", "expired"],
