@@ -4,6 +4,7 @@ import Reservation from "../models/Reservation.js";
 /**
  * 1) Crear una reserva por 10 minutos
  */
+
 export const makeReservation = async (req, res) => {
   try {
     const { userId, serviceId, seatNumber } = req.body;
@@ -12,14 +13,11 @@ export const makeReservation = async (req, res) => {
     if (!service)
       return res.status(404).json({ message: "Servicio no encontrado" });
 
-    //const seat = service.seats.find((s) => s.seatNumber === seatNumber);
-
     const cleanInput = seatNumber.trim().toUpperCase();
-
     const seat = service.seats.find(
       (s) => s.seatNumber.trim().toUpperCase() === cleanInput
     );
-    //console.log(seat);
+
     if (!seat) {
       return res.status(400).json({
         message: "Asiento no existe en este servicio",
@@ -30,23 +28,29 @@ export const makeReservation = async (req, res) => {
     if (seat.reserved || seat.confirmed) {
       return res.status(400).json({ message: "Asiento no disponible" });
     }
-    // Marcar asiento como reservado temporalmente
+
+    const reservationExpiresAt = new Date(Date.now() + 10 * 60 * 1000);
+
     seat.reserved = true;
     seat.reservedBy = userId;
-    seat.reservationExpiresAt = new Date(Date.now() + 10 * 60 * 1000); // 10 min
+    seat.reservationExpiresAt = reservationExpiresAt;
 
     await service.save();
 
-    // Crear registro de reserva
+    // Crear registro de reserva con expiresAt
     const reservation = await Reservation.create({
       user: userId,
       service: serviceId,
-      seatNumber,
+      seatNumber: cleanInput,
       status: "reserved",
-      expiresAt: seat.reservationExpiresAt,
+      expiresAt: reservationExpiresAt,
     });
 
-    res.json({ message: "Reserva creada por 10 minutos", reservation });
+    res.json({
+      message: "Reserva creada por 10 minutos",
+      reservation,
+      expiresAt: reservationExpiresAt
+    });
   } catch (error) {
     console.error(error);
     res.status(500).json({ message: "Error interno" });

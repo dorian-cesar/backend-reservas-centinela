@@ -11,6 +11,9 @@ const generatedServiceSchema = new mongoose.Schema({
       seatNumber: String,
       reserved: { type: Boolean, default: false },
       reservedBy: { type: mongoose.Schema.Types.ObjectId, ref: "User" },
+      reservationExpiresAt: Date, // ← Agregar este campo
+      confirmed: { type: Boolean, default: false },
+      confirmedBy: { type: mongoose.Schema.Types.ObjectId, ref: "User" },
     },
   ],
 });
