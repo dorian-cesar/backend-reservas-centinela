@@ -1,4 +1,3 @@
-import mongoose from "mongoose";
 import GeneratedService from "../models/GeneratedService.js";
 import Reservation from "../models/Reservation.js";
 import { sendReservationEmailNotification } from "../services/mailService.js";
@@ -778,38 +777,69 @@ export const getUserConfirmedReservations = async (req, res) => {
       user: userId,
       status: "confirmed"
     })
-      .populate("service")
+      .populate({
+        path: "service",
+        populate: [
+          { path: "template" },
+          { path: "busLayout" }
+        ]
+      })
       .sort({ createdAt: -1 });
 
-    // Enriquecer con información de tiempo restante para liberación
-    const confirmedReservations = reservations.map((reservation) => {
+
+    const serviceMap = new Map();
+
+    reservations.forEach((reservation) => {
       const service = reservation.service;
+
+      if (!serviceMap.has(service._id.toString())) {
+        // Primera vez que vemos este servicio, crear entrada base
+        serviceMap.set(service._id.toString(), {
+          ...service.toObject(),
+          userReservations: [] // Array para las reservas de este usuario en este servicio
+        });
+      }
+
+      // Agregar la reserva específica a este servicio
+      const serviceEntry = serviceMap.get(service._id.toString());
+      serviceEntry.userReservations.push({
+        reservationId: reservation._id,
+        seatNumber: reservation.seatNumber,
+        reservationCreatedAt: reservation.createdAt,
+        authorizationCode: reservation.authorizationCode
+      });
+    });
+
+    // Convertir el mapa a array y enriquecer con información de tiempo
+    const servicesWithReservations = Array.from(serviceMap.values()).map(service => {
       const now = new Date();
       const serviceDateTime = new Date(service.date);
       const timeDiffHours = (serviceDateTime - now) / (1000 * 60 * 60);
 
       return {
-        reservationId: reservation._id,
-        seatNumber: reservation.seatNumber,
-        status: reservation.status,
-        createdAt: reservation.createdAt,
-        serviceId: service._id,
-        serviceDate: service.date,
-        serviceTime: service.time,
+        _id: service._id,
+        template: service.template,
+        date: service.date,
         origin: service.origin,
         destination: service.destination,
+        busLayout: service.busLayout,
+        seats: service.seats,
+        time: service.time,
+        // Información específica del usuario
+        userReservations: service.userReservations,
         canBeReleased: timeDiffHours > 48,
         timeRemaining: `${Math.max(0, timeDiffHours).toFixed(1)} horas`,
         hoursRemaining: timeDiffHours,
+        // Metadata
+        totalUserSeats: service.userReservations.length,
+        releaseDeadline: new Date(serviceDateTime.getTime() - (48 * 60 * 60 * 1000)) // Fecha límite para liberar
       };
     });
 
-    res.json({
-      confirmedReservations,
-      total: confirmedReservations.length,
-    });
+    res.json(servicesWithReservations);
+
   } catch (error) {
     console.error("Error obteniendo reservas confirmadas:", error);
-    res.status(500).json({ message: "Error interno del servidor" });
+    res.status(500).json({ error: error.message });
   }
 };
