@@ -6,11 +6,13 @@ import BusLayout from "../models/BusLayout.js";
 
 /**
  * @swagger
- * /api/templates:
+ * /api/services/template:
  *   post:
  *     summary: Crea un nuevo template de servicio.
  *     tags:
  *       - Templates
+ *     security:
+ *       - bearerAuth: []
  *     requestBody:
  *       required: true
  *       content:
@@ -27,14 +29,6 @@ import BusLayout from "../models/BusLayout.js";
  *       400:
  *         description: Error de validación o datos incorrectos.
  */
-/**
- * Crea un nuevo template de servicio.
- * @function
- * @async
- * @param {import('express').Request} req - Objeto de solicitud HTTP.
- * @param {import('express').Response} res - Objeto de respuesta HTTP.
- * @returns {Promise<void>}
- */
 export const createTemplate = async (req, res) => {
   try {
     const template = await ServiceTemplate.create(req.body);
@@ -46,47 +40,13 @@ export const createTemplate = async (req, res) => {
 
 /**
  * @swagger
- * /api/templates:
- *   get:
- *     summary: Lista todos los templates de servicio.
- *     tags:
- *       - Templates
- *     responses:
- *       200:
- *         description: Lista de templates.
- *         content:
- *           application/json:
- *             schema:
- *               type: array
- *               items:
- *                 $ref: '#/components/schemas/ServiceTemplate'
- *       500:
- *         description: Error interno del servidor.
- */
-/**
- * Lista todos los templates de servicio.
- * @function
- * @async
- * @param {import('express').Request} req - Objeto de solicitud HTTP.
- * @param {import('express').Response} res - Objeto de respuesta HTTP.
- * @returns {Promise<void>}
- */
-export const listTemplates = async (req, res) => {
-  try {
-    const templates = await ServiceTemplate.find().populate("layout");
-    res.json(templates);
-  } catch (error) {
-    res.status(500).json({ error: error.message });
-  }
-};
-
-/**
- * @swagger
  * /api/services/generate:
  *   post:
  *     summary: Genera servicios para todos los templates por 14 días desde la fecha de inicio.
  *     tags:
  *       - Servicios
+ *     security:
+ *       - bearerAuth: []
  *     responses:
  *       200:
  *         description: Servicios generados exitosamente.
@@ -100,16 +60,6 @@ export const listTemplates = async (req, res) => {
  *       500:
  *         description: Error interno del servidor.
  */
-/**
- * Genera servicios para todos los templates por 14 días desde la fecha de inicio,
- * considerando los días de la semana especificados en cada template.
- * Incluye la generación de asientos según el layout del bus.
- * @function
- * @async
- * @param {import('express').Request} req - Objeto de solicitud HTTP.
- * @param {import('express').Response} res - Objeto de respuesta HTTP.
- * @returns {Promise<void>}
- */
 export const generateServices = async (req, res) => {
   try {
     const templates = await ServiceTemplate.find();
@@ -117,7 +67,6 @@ export const generateServices = async (req, res) => {
     for (const t of templates) {
       const start = new Date(t.startDate);
 
-      // generar 14 días desde startDate
       for (let i = 0; i < 14; i++) {
         const currentDate = new Date(start);
         currentDate.setDate(start.getDate() + i);
@@ -127,9 +76,7 @@ export const generateServices = async (req, res) => {
 
         if (!t.daysOfWeek.includes(dayOfWeek)) continue;
 
-        // ================================
         // Cargar layout y generar asientos
-        // ================================
         const layout = await BusLayout.findById(t.layout);
         if (!layout) continue;
 
@@ -165,7 +112,6 @@ export const generateServices = async (req, res) => {
           });
         }
 
-        // Crear servicio generado
         await GeneratedService.create({
           template: t._id,
           date: currentDate,
@@ -189,11 +135,13 @@ export const generateServices = async (req, res) => {
 
 /**
  * @swagger
- * /api/services/generate/{id}:
+ * /api/services/generateOne/{id}:
  *   post:
  *     summary: Genera servicios para un template específico por 14 días desde la fecha de inicio.
  *     tags:
  *       - Servicios
+ *     security:
+ *       - bearerAuth: []
  *     parameters:
  *       - in: path
  *         name: id
@@ -224,16 +172,6 @@ export const generateServices = async (req, res) => {
  *       500:
  *         description: Error interno del servidor.
  */
-/**
- * Genera servicios para un template específico por 14 días desde la fecha de inicio,
- * considerando los días de la semana definidos en el template.
- * Incluye la generación de asientos según el layout del bus.
- * @function
- * @async
- * @param {import('express').Request} req - Objeto de solicitud HTTP.
- * @param {import('express').Response} res - Objeto de respuesta HTTP.
- * @returns {Promise<void>}
- */
 export const generateOne = async (req, res) => {
   try {
     const templateId = req.params.id;
@@ -258,9 +196,7 @@ export const generateOne = async (req, res) => {
 
       if (!t.daysOfWeek.includes(dayOfWeek)) continue;
 
-      // ================================
       // Cargar layout y generar asientos
-      // ================================
       const layout = await BusLayout.findById(t.layout);
       if (!layout) continue;
 
@@ -275,9 +211,6 @@ export const generateOne = async (req, res) => {
                 seatNumber: seat,
                 floor: 1,
                 status: "available",
-                // si quieres la forma original (reserved/reservedBy) usa:
-                // reserved: false,
-                // reservedBy: null
               });
             }
           });
@@ -299,7 +232,6 @@ export const generateOne = async (req, res) => {
         });
       }
 
-      // Crear servicio generado
       const newService = await GeneratedService.create({
         template: t._id,
         date: currentDate,
@@ -318,45 +250,6 @@ export const generateOne = async (req, res) => {
       count: createdServices.length,
       services: createdServices,
     });
-  } catch (error) {
-    res.status(500).json({ error: error.message });
-  }
-};
-
-/**
- * @swagger
- * /api/services/generated:
- *   get:
- *     summary: Lista todos los servicios generados.
- *     tags:
- *       - Servicios
- *     responses:
- *       200:
- *         description: Lista de servicios generados.
- *         content:
- *           application/json:
- *             schema:
- *               type: array
- *               items:
- *                 $ref: '#/components/schemas/GeneratedService'
- *       500:
- *         description: Error interno del servidor.
- */
-/**
- * Lista todos los servicios generados, incluyendo información del template y layout del bus.
- * @function
- * @async
- * @param {import('express').Request} req - Objeto de solicitud HTTP.
- * @param {import('express').Response} res - Objeto de respuesta HTTP.
- * @returns {Promise<void>}
- */
-export const listGeneratedServices = async (req, res) => {
-  try {
-    const services = await GeneratedService.find()
-        .populate("template")
-        .populate("busLayout");
-
-    res.json(services);
   } catch (error) {
     res.status(500).json({ error: error.message });
   }
@@ -402,14 +295,6 @@ export const listGeneratedServices = async (req, res) => {
  *         description: Faltan parámetros requeridos.
  *       500:
  *         description: Error interno del servidor.
- */
-/**
- * Busca servicios generados por origen, destino y fecha.
- * @function
- * @async
- * @param {import('express').Request} req - Objeto de solicitud HTTP.
- * @param {import('express').Response} res - Objeto de respuesta HTTP.
- * @returns {Promise<void>}
  */
 export const searchServices = async (req, res) => {
   try {

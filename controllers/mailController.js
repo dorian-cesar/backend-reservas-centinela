@@ -2,10 +2,9 @@ import sgMail from "@sendgrid/mail";
 import dotenv from "dotenv";
 dotenv.config();
 sgMail.setApiKey(process.env.SENDGRID_API_KEY);
-
 /**
  * @swagger
- * /sendReservationEmail:
+ * /api/mail/send:
  *   post:
  *     summary: Envía un correo electrónico de confirmación de reserva utilizando SendGrid.
  *     description: >
@@ -83,7 +82,6 @@ sgMail.setApiKey(process.env.SENDGRID_API_KEY);
  *                   type: string
  *                   example: Descripción del error
  */
-
 /**
  * Envía un correo electrónico de confirmación de reserva utilizando SendGrid.
  *

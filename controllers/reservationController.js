@@ -4,7 +4,7 @@ import { sendReservationEmailNotification } from "../services/mailService.js";
 
 /**
  * @swagger
- * /reservations:
+ * /api/reservations/reserve:
  *   post:
  *     summary: Crea una reserva temporal de un asiento por 10 minutos.
  *     description: Reserva un asiento específico para un usuario durante 10 minutos en un servicio generado.
@@ -52,14 +52,6 @@ import { sendReservationEmailNotification } from "../services/mailService.js";
  *       500:
  *         description: Error interno del servidor.
  */
-/**
- * Crea una reserva temporal de un asiento por 10 minutos.
- * @function
- * @async
- * @param {import('express').Request} req - Objeto de solicitud de Express.
- * @param {import('express').Response} res - Objeto de respuesta de Express.
- * @returns {Promise<void>}
- */
 export const makeReservation = async (req, res) => {
   try {
     const { userId, serviceId, seatNumber } = req.body;
@@ -74,7 +66,7 @@ export const makeReservation = async (req, res) => {
 
     const cleanInput = seatNumber.trim().toUpperCase();
     const seat = service.seats.find(
-      (s) => s.seatNumber.trim().toUpperCase() === cleanInput
+        (s) => s.seatNumber.trim().toUpperCase() === cleanInput
     );
 
     if (!seat) {
@@ -118,7 +110,7 @@ export const makeReservation = async (req, res) => {
 
 /**
  * @swagger
- * /reservations/confirm:
+ * /api/reservations/confirm:
  *   post:
  *     summary: Confirma una reserva después del pago.
  *     description: Confirma una reserva existente, marcando el asiento como confirmado tras el pago.
@@ -159,14 +151,6 @@ export const makeReservation = async (req, res) => {
  *       500:
  *         description: Error interno del servidor.
  */
-/**
- * Confirma una reserva después del pago.
- * @function
- * @async
- * @param {import('express').Request} req - Objeto de solicitud de Express.
- * @param {import('express').Response} res - Objeto de respuesta de Express.
- * @returns {Promise<void>}
- */
 export const confirmReservation = async (req, res) => {
   try {
     const { reservationId, authorizationCode } = req.body;
@@ -184,33 +168,33 @@ export const confirmReservation = async (req, res) => {
       await reservation.save();
       // Intentamos liberar asiento por seguridad (no crítico si falla)
       await GeneratedService.updateOne(
-        { _id: reservation.service, "seats.seatNumber": reservation.seatNumber },
-        { $set: { "seats.$.reserved": false, "seats.$.reservedBy": null, "seats.$.reservationExpiresAt": null } }
+          { _id: reservation.service, "seats.seatNumber": reservation.seatNumber },
+          { $set: { "seats.$.reserved": false, "seats.$.reservedBy": null, "seats.$.reservationExpiresAt": null } }
       );
       return res.status(400).json({ message: "La reserva expiró" });
     }
 
     const updateResult = await GeneratedService.updateOne(
-      {
-        _id: reservation.service,
-        "seats": {
-          $elemMatch: {
-            seatNumber: reservation.seatNumber,
-            reserved: true,
-            reservedBy: reservation.user, // requiere que reservedBy coincida
-            confirmed: { $ne: true } // solo si no está ya confirmado
+        {
+          _id: reservation.service,
+          "seats": {
+            $elemMatch: {
+              seatNumber: reservation.seatNumber,
+              reserved: true,
+              reservedBy: reservation.user, // requiere que reservedBy coincida
+              confirmed: { $ne: true } // solo si no está ya confirmado
+            }
+          }
+        },
+        {
+          $set: {
+            "seats.$.confirmed": true,
+            "seats.$.confirmedBy": reservation.user,
+            "seats.$.reserved": true,
+            "seats.$.reservedBy": reservation.user,
+            "seats.$.reservationExpiresAt": null
           }
         }
-      },
-      {
-        $set: {
-          "seats.$.confirmed": true,
-          "seats.$.confirmedBy": reservation.user,
-          "seats.$.reserved": true,
-          "seats.$.reservedBy": reservation.user,
-          "seats.$.reservationExpiresAt": null
-        }
-      }
     );
 
     if (updateResult.modifiedCount === 0) {
@@ -228,8 +212,8 @@ export const confirmReservation = async (req, res) => {
 
     // Envío de correo asincrónico (no bloquea la respuesta)
     sendReservationEmailNotification(populatedReservation)
-      .then(() => console.log(`Correo enviado para reserva ${reservation._id}`))
-      .catch((err) => console.error(`Error enviando correo para reserva ${reservation._id}:`, err));
+        .then(() => console.log(`Correo enviado para reserva ${reservation._id}`))
+        .catch((err) => console.error(`Error enviando correo para reserva ${reservation._id}:`, err));
 
     res.json({ message: "Reserva confirmada", reservation: populatedReservation });
   } catch (error) {
@@ -240,7 +224,7 @@ export const confirmReservation = async (req, res) => {
 
 /**
  * @swagger
- * /reservations/release:
+ * /api/reservations/release:
  *   post:
  *     summary: Libera un asiento manualmente o por cancelación.
  *     description: Cambia el estado de la reserva y del asiento a liberado.
@@ -277,14 +261,6 @@ export const confirmReservation = async (req, res) => {
  *       500:
  *         description: Error interno del servidor.
  */
-/**
- * Libera un asiento manualmente o por cancelación.
- * @function
- * @async
- * @param {import('express').Request} req - Objeto de solicitud de Express.
- * @param {import('express').Response} res - Objeto de respuesta de Express.
- * @returns {Promise<void>}
- */
 export const releaseSeat = async (req, res) => {
   try {
     const { reservationId } = req.body;
@@ -295,7 +271,7 @@ export const releaseSeat = async (req, res) => {
 
     const service = await GeneratedService.findById(reservation.service);
     const seat = service.seats.find(
-      (s) => s.seatNumber === reservation.seatNumber
+        (s) => s.seatNumber === reservation.seatNumber
     );
 
     if (!seat) return res.status(400).json({ message: "Asiento no existe" });
@@ -319,7 +295,7 @@ export const releaseSeat = async (req, res) => {
 
 /**
  * @swagger
- * /reservations/release-with-validation:
+ * /api/reservations/release-seat:
  *   post:
  *     summary: Libera un asiento con validación de tiempo y permisos.
  *     description: Libera un asiento reservado o confirmado por el usuario, validando que el usuario tenga permisos y que el asiento pertenezca a él.
@@ -387,14 +363,6 @@ export const releaseSeat = async (req, res) => {
  *       500:
  *         description: Error interno del servidor.
  */
-/**
- * Libera un asiento con validación de tiempo y permisos.
- * @function
- * @async
- * @param {import('express').Request} req - Objeto de solicitud de Express.
- * @param {import('express').Response} res - Objeto de respuesta de Express.
- * @returns {Promise<void>}
- */
 export const releaseSeatWithTimeValidation = async (req, res) => {
   try {
     const { userId, serviceId, seatNumber } = req.body;
@@ -412,26 +380,10 @@ export const releaseSeatWithTimeValidation = async (req, res) => {
       return res.status(404).json({ message: "Servicio no encontrado" });
     }
 
-    // Validar que el servicio sea futuro y tenga más de 48 horas
-    const now = new Date();
-    const serviceDateTime = new Date(service.date);
-
-    // Calcular diferencia en horas
-    // const timeDiffHours = (serviceDateTime - now) / (1000 * 60 * 60);
-
-    // if (timeDiffHours <= 48) {
-    //   return res.status(400).json({
-    //     message:
-    //       "No se puede liberar el asiento. Faltan menos de 48 horas para el servicio",
-    //     timeRemaining: `${timeDiffHours.toFixed(1)} horas`,
-    //     cutoffTime: "48 horas antes del servicio",
-    //   });
-    // }
-
     // Buscar el asiento en el servicio
     const cleanInput = seatNumber.trim().toUpperCase();
     const seat = service.seats.find(
-      (s) => s.seatNumber.trim().toUpperCase() === cleanInput
+        (s) => s.seatNumber.trim().toUpperCase() === cleanInput
     );
 
     if (!seat) {
@@ -516,7 +468,7 @@ export const releaseSeatWithTimeValidation = async (req, res) => {
 
 /**
  * @swagger
- * /reservations/user/{userId}/active:
+ * /api/reservations/user/{userId}/active:
  *   get:
  *     summary: Obtiene las reservas activas de un usuario con información del servicio.
  *     description: Retorna las reservas activas (reserved o confirmed) de un usuario, incluyendo información relevante del servicio y si puede liberarse.
@@ -572,14 +524,6 @@ export const releaseSeatWithTimeValidation = async (req, res) => {
  *       500:
  *         description: Error interno del servidor.
  */
-/**
- * Obtiene las reservas activas de un usuario con información del servicio.
- * @function
- * @async
- * @param {import('express').Request} req - Objeto de solicitud de Express.
- * @param {import('express').Response} res - Objeto de respuesta de Express.
- * @returns {Promise<void>}
- */
 export const getUserActiveReservations = async (req, res) => {
   try {
     const { userId } = req.params;
@@ -589,8 +533,8 @@ export const getUserActiveReservations = async (req, res) => {
       user: userId,
       status: { $in: ["reserved", "confirmed"] },
     })
-      .populate("service")
-      .sort({ createdAt: -1 });
+        .populate("service")
+        .sort({ createdAt: -1 });
 
     // Enriquecer con información de tiempo restante y si puede liberarse
     const activeReservations = reservations.map((reservation) => {
@@ -627,7 +571,7 @@ export const getUserActiveReservations = async (req, res) => {
 
 /**
  * @swagger
- * /reservations/user/{userId}/history:
+ * /api/reservations/user/{userId}/history:
  *   get:
  *     summary: Obtiene el historial de reservas de un usuario.
  *     description: Retorna el historial de reservas de un usuario, incluyendo todas las reservas (released, cancelled, expired, etc.).
@@ -675,22 +619,14 @@ export const getUserActiveReservations = async (req, res) => {
  *       500:
  *         description: Error interno del servidor.
  */
-/**
- * Obtiene el historial de reservas de un usuario (todas incluyendo released, cancelled, expired).
- * @function
- * @async
- * @param {import('express').Request} req - Objeto de solicitud de Express.
- * @param {import('express').Response} res - Objeto de respuesta de Express.
- * @returns {Promise<void>}
- */
 export const getUserReservationHistory = async (req, res) => {
   try {
     const { userId } = req.params;
 
     const reservations = await Reservation.find({ user: userId })
-      .populate("service")
-      .sort({ createdAt: -1 })
-      .limit(50); // Limitar historial
+        .populate("service")
+        .sort({ createdAt: -1 })
+        .limit(50); // Limitar historial
 
     const history = reservations.map((reservation) => {
       const service = reservation.service;
@@ -716,8 +652,69 @@ export const getUserReservationHistory = async (req, res) => {
     res.status(500).json({ message: "Error interno del servidor" });
   }
 };
-
-
+/**
+ * @swagger
+ * /api/reservations/user/{userId}/reserved:
+ *   get:
+ *     summary: Obtiene los asientos reservados temporalmente por un usuario.
+ *     description: | Retorna las reservas temporales (status: reserved) de un usuario, incluyendo información de tiempo restante y si puede liberarse.
+ *     tags:
+ *       - Reservations
+ *     parameters:
+ *       - in: path
+ *         name: userId
+ *         required: true
+ *         schema:
+ *           type: string
+ *         description: ID del usuario.
+ *     responses:
+ *       200:
+ *         description: Lista de asientos reservados temporalmente.
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 reservedSeats:
+ *                   type: array
+ *                   items:
+ *                     type: object
+ *                     properties:
+ *                       reservationId:
+ *                         type: string
+ *                       seatNumber:
+ *                         type: string
+ *                       status:
+ *                         type: string
+ *                       createdAt:
+ *                         type: string
+ *                         format: date-time
+ *                       expiresAt:
+ *                         type: string
+ *                         format: date-time
+ *                       minutesLeft:
+ *                         type: integer
+ *                       serviceId:
+ *                         type: string
+ *                       serviceDate:
+ *                         type: string
+ *                       serviceTime:
+ *                         type: string
+ *                       origin:
+ *                         type: string
+ *                       destination:
+ *                         type: string
+ *                       canBeReleased:
+ *                         type: boolean
+ *                       timeRemaining:
+ *                         type: string
+ *                       hoursRemaining:
+ *                         type: number
+ *                 total:
+ *                   type: integer
+ *       500:
+ *         description: Error interno del servidor.
+ */
 export const getUserReservedSeats = async (req, res) => {
   try {
     const { userId } = req.params;
@@ -727,8 +724,8 @@ export const getUserReservedSeats = async (req, res) => {
       user: userId,
       status: "reserved"
     })
-      .populate("service")
-      .sort({ createdAt: -1 });
+        .populate("service")
+        .sort({ createdAt: -1 });
 
     // Enriquecer con información de tiempo restante para la reserva
     const reservedSeats = reservations.map((reservation) => {
@@ -768,6 +765,69 @@ export const getUserReservedSeats = async (req, res) => {
   }
 };
 
+/**
+ * @swagger
+ * /api/reservations/user/{userId}/reserved:
+ *   get:
+ *     summary: Obtiene los asientos reservados temporalmente por un usuario.
+ *     description: "Retorna las reservas temporales (status: reserved) de un usuario, incluyendo información de tiempo restante y si puede liberarse."
+ *     tags:
+ *       - Reservations
+ *     parameters:
+ *       - in: path
+ *         name: userId
+ *         required: true
+ *         schema:
+ *           type: string
+ *         description: ID del usuario.
+ *     responses:
+ *       200:
+ *         description: Lista de asientos reservados temporalmente.
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 reservedSeats:
+ *                   type: array
+ *                   items:
+ *                     type: object
+ *                     properties:
+ *                       reservationId:
+ *                         type: string
+ *                       seatNumber:
+ *                         type: string
+ *                       status:
+ *                         type: string
+ *                       createdAt:
+ *                         type: string
+ *                         format: date-time
+ *                       expiresAt:
+ *                         type: string
+ *                         format: date-time
+ *                       minutesLeft:
+ *                         type: integer
+ *                       serviceId:
+ *                         type: string
+ *                       serviceDate:
+ *                         type: string
+ *                       serviceTime:
+ *                         type: string
+ *                       origin:
+ *                         type: string
+ *                       destination:
+ *                         type: string
+ *                       canBeReleased:
+ *                         type: boolean
+ *                       timeRemaining:
+ *                         type: string
+ *                       hoursRemaining:
+ *                         type: number
+ *                 total:
+ *                   type: integer
+ *       500:
+ *         description: Error interno del servidor.
+ */
 export const getUserConfirmedReservations = async (req, res) => {
   try {
     const { userId } = req.params;
@@ -777,14 +837,14 @@ export const getUserConfirmedReservations = async (req, res) => {
       user: userId,
       status: "confirmed"
     })
-      .populate({
-        path: "service",
-        populate: [
-          { path: "template" },
-          { path: "busLayout" }
-        ]
-      })
-      .sort({ createdAt: -1 });
+        .populate({
+          path: "service",
+          populate: [
+            { path: "template" },
+            { path: "busLayout" }
+          ]
+        })
+        .sort({ createdAt: -1 });
 
 
     const serviceMap = new Map();

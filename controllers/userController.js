@@ -2,11 +2,13 @@ import User from "../models/User.js";
 
 /**
  * @swagger
- * /users:
+ * /api/users:
  *   get:
  *     summary: Obtiene la lista de todos los usuarios
  *     tags:
  *       - Usuarios
+ *     security:
+ *       - bearerAuth: []
  *     responses:
  *       200:
  *         description: Lista de usuarios obtenida exitosamente
@@ -17,16 +19,6 @@ import User from "../models/User.js";
  *               items:
  *                 $ref: '#/components/schemas/User'
  */
-
-/**
- * Obtiene todos los usuarios registrados en la base de datos.
- *
- * @async
- * @function getUsers
- * @param {import('express').Request} req - Objeto de solicitud HTTP.
- * @param {import('express').Response} res - Objeto de respuesta HTTP.
- * @returns {Promise<void>} Retorna una respuesta JSON con la lista de usuarios.
- */
 export const getUsers = async (req, res) => {
   const users = await User.find();
   res.json(users);
@@ -34,11 +26,13 @@ export const getUsers = async (req, res) => {
 
 /**
  * @swagger
- * /users/{id}:
+ * /api/users/{id}:
  *   delete:
  *     summary: Elimina un usuario por su ID
  *     tags:
  *       - Usuarios
+ *     security:
+ *       - bearerAuth: []
  *     parameters:
  *       - in: path
  *         name: id
@@ -57,18 +51,21 @@ export const getUsers = async (req, res) => {
  *                 message:
  *                   type: string
  *                   example: Usuario eliminado
- */
-
-/**
- * Elimina un usuario de la base de datos por su identificador.
- *
- * @async
- * @function deleteUser
- * @param {import('express').Request} req - Objeto de solicitud HTTP.
- * @param {import('express').Response} res - Objeto de respuesta HTTP.
- * @returns {Promise<void>} Retorna una respuesta JSON confirmando la eliminación.
+ *       404:
+ *         description: Usuario no encontrado
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 error:
+ *                   type: string
+ *                   example: Usuario no encontrado
  */
 export const deleteUser = async (req, res) => {
-  await User.findByIdAndDelete(req.params.id);
+  const user = await User.findByIdAndDelete(req.params.id);
+  if (!user) {
+    return res.status(404).json({ error: "Usuario no encontrado" });
+  }
   res.json({ message: "Usuario eliminado" });
 };

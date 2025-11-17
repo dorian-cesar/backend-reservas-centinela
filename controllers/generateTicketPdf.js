@@ -1,13 +1,48 @@
 import PDFDocument from 'pdfkit';
 import Reservation from '../models/Reservation.js';
 import User from '../models/User.js';
-
 /**
- * Genera un PDF moderno con el ticket de la reserva y lo envía en la respuesta.
- * Se basa en el diseño del template HTML proporcionado.
- * No muestra campos vacíos o nulos.
- * @param {import('express').Request} req
- * @param {import('express').Response} res
+ * @swagger
+ * /api/reservations/ticket/{reservationId}:
+ *   get:
+ *     summary: Genera y descarga el ticket de reserva en PDF
+ *     description: Genera un archivo PDF moderno con los detalles de la reserva y lo envía como respuesta.
+ *     tags:
+ *       - Reservations
+ *     parameters:
+ *       - in: path
+ *         name: reservationId
+ *         required: true
+ *         schema:
+ *           type: string
+ *         description: ID de la reserva a consultar
+ *     responses:
+ *       200:
+ *         description: PDF generado exitosamente
+ *         content:
+ *           application/pdf:
+ *             schema:
+ *               type: string
+ *               format: binary
+ *       404:
+ *         description: Reserva no encontrada o servicio asociado no encontrado
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
+ *       500:
+ *         description: Error interno al generar el ticket
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
+ *     security: []
  */
 export const generateTicketPdf = async (req, res) => {
     try {

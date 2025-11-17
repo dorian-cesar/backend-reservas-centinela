@@ -3,7 +3,7 @@ import BusLayout from "../models/BusLayout.js";
 
 /**
  * @swagger
- * /bus-layouts:
+ * /api/layouts:
  *   post:
  *     summary: Crea un nuevo layout de autobús
  *     tags:
@@ -44,7 +44,7 @@ export const createLayout = async (req, res) => {
 
 /**
  * @swagger
- * /bus-layouts:
+ * /api/layouts:
  *   get:
  *     summary: Obtiene todos los layouts de autobús
  *     tags:
@@ -80,7 +80,7 @@ export const getLayouts = async (req, res) => {
 
 /**
  * @swagger
- * /bus-layouts/{id}:
+ * /api/layouts/{id}:
  *   get:
  *     summary: Obtiene un layout de autobús por su ID
  *     tags:
@@ -127,7 +127,7 @@ export const getLayoutById = async (req, res) => {
 
 /**
  * @swagger
- * /bus-layouts/{id}:
+ * /api/layouts/{id}:
  *   put:
  *     summary: Actualiza un layout de autobús existente
  *     tags:
@@ -184,7 +184,7 @@ export const updateLayout = async (req, res) => {
 
 /**
  * @swagger
- * /bus-layouts/{id}:
+ * /api/layouts/{id}:
  *   delete:
  *     summary: Elimina un layout de autobús por su ID
  *     tags:
@@ -232,4 +232,3 @@ export const deleteLayout = async (req, res) => {
     res.status(500).json({ error: error.message });
   }
 };
-//comentario de prueba//

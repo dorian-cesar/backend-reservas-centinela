@@ -2,7 +2,7 @@ import ServiceTemplate from "../models/ServiceTemplate.js";
 
 /**
  * @swagger
- * /cities/origins:
+ * /api/cities/origins:
  *   get:
  *     summary: Lista todas las ciudades de origen sin duplicar.
  *     tags:
@@ -43,7 +43,7 @@ export const listOrigins = async (req, res) => {
 
 /**
  * @swagger
- * /cities/destinations/{origin}:
+ * /api/cities/destinations/{origin}:
  *   get:
  *     summary: Lista los destinos asociados a un origen específico.
  *     tags:
@@ -101,7 +101,7 @@ export const listDestinationsByOrigin = async (req, res) => {
 
 /**
  * @swagger
- * /cities/map:
+ * /api/cities/map:
  *   get:
  *     summary: Obtiene un mapa de origen a destinos agrupados.
  *     tags:

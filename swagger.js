@@ -1,6 +1,6 @@
 import swaggerJsdoc from 'swagger-jsdoc';
 import swaggerUi from 'swagger-ui-express';
-import { schemas } from './swaggerSchemas.js'; // <--- IMPORTANTE
+import { schemas } from './swaggerSchemas.js';
 
 const options = {
     definition: {
@@ -11,10 +11,13 @@ const options = {
             description: 'Documentación generada con Swagger',
         },
         components: {
-            schemas, // <--- Aquí se anexan los schemas generados
+            schemas,
         },
     },
-    apis: ['./routes/*.js', './controllers/*.js'],
+    apis: [
+        './routes/**/*.js',
+        './controllers/**/*.js'
+    ],
 };
 
 const swaggerSpec = swaggerJsdoc(options);

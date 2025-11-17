@@ -2,7 +2,7 @@ import jwt from "jsonwebtoken";
 import User from "../models/User.js";
 /**
  * @swagger
- * /register:
+ * /api/auth/register:
  *   post:
  *     summary: Registra un nuevo usuario.
  *     tags:
@@ -56,7 +56,7 @@ export const register = async (req, res) => {
 
 /**
  * @swagger
- * /login:
+ * /api/auth/login:
  *   post:
  *     summary: Inicia sesión y obtiene un token JWT.
  *     tags:
