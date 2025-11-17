@@ -13,14 +13,14 @@ import BusLayout from "../models/BusLayout.js";
  *       content:
  *         application/json:
  *           schema:
- *             $ref: '#/components/schemas/BusLayout'
+ *             $ref: '#/models/BusLayout'
  *     responses:
  *       201:
  *         description: Layout creado exitosamente
  *         content:
  *           application/json:
  *             schema:
- *               $ref: '#/components/schemas/BusLayout'
+ *               $ref: '#/models/BusLayout'
  *       500:
  *         description: Error interno del servidor
  */
@@ -57,7 +57,7 @@ export const createLayout = async (req, res) => {
  *             schema:
  *               type: array
  *               items:
- *                 $ref: '#/components/schemas/BusLayout'
+ *                 $ref: '#/models/BusLayout'
  *       500:
  *         description: Error interno del servidor
  */
@@ -98,7 +98,7 @@ export const getLayouts = async (req, res) => {
  *         content:
  *           application/json:
  *             schema:
- *               $ref: '#/components/schemas/BusLayout'
+ *               $ref: '#/models/BusLayout'
  *       404:
  *         description: Layout no encontrado
  *       500:
@@ -144,14 +144,14 @@ export const getLayoutById = async (req, res) => {
  *       content:
  *         application/json:
  *           schema:
- *             $ref: '#/components/schemas/BusLayout'
+ *             $ref: '#/models/BusLayout'
  *     responses:
  *       200:
  *         description: Layout actualizado exitosamente
  *         content:
  *           application/json:
  *             schema:
- *               $ref: '#/components/schemas/BusLayout'
+ *               $ref: '#/models/BusLayout'
  *       404:
  *         description: Layout no encontrado
  *       500:

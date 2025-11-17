@@ -15,7 +15,7 @@ import User from "../models/User.js";
  *             schema:
  *               type: array
  *               items:
- *                 $ref: '#/components/schemas/User'
+ *                 $ref: '#/models/User'
  */
 
 /**

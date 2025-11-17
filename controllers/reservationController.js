@@ -42,7 +42,7 @@ import { sendReservationEmailNotification } from "../services/mailService.js";
  *                 message:
  *                   type: string
  *                 reservation:
- *                   $ref: '#/components/schemas/Reservation'
+ *                   $ref: '#/models/Reservation'
  *                 expiresAt:
  *                   type: string
  *                   format: date-time
@@ -152,7 +152,7 @@ export const makeReservation = async (req, res) => {
  *                 message:
  *                   type: string
  *                 reservation:
- *                   $ref: '#/components/schemas/Reservation'
+ *                   $ref: '#/models/Reservation'
  *       400:
  *         description: Reserva no activa o asiento no existe.
  *       404:
@@ -270,7 +270,7 @@ export const confirmReservation = async (req, res) => {
  *                 message:
  *                   type: string
  *                 reservation:
- *                   $ref: '#/components/schemas/Reservation'
+ *                   $ref: '#/models/Reservation'
  *       400:
  *         description: Asiento no existe.
  *       404:

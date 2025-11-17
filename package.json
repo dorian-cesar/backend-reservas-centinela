@@ -6,26 +6,28 @@
   "main": "server.js",
   "scripts": {
     "start": "node server.js",
+    "doc:schemas": "node scripts/generateSwaggerSchemas.mjs",
     "dev": "nodemon server.js",
     "seed": "node scripts/seedFromCsv.js"
   },
   "dependencies": {
     "@sendgrid/mail": "^8.1.6",
-    "bcrypt": "^5.1.0",
+    "bcrypt": "^6.0.0",
     "bcryptjs": "^3.0.3",
     "cors": "^2.8.5",
-    "csv-parse": "^5.0.0",
-    "dotenv": "^16.0.0",
-    "express": "^4.21.2",
-    "jsonwebtoken": "^9.0.0",
-    "mongoose": "^7.0.0",
-    "morgan": "^1.10.0",
-    "node-cron": "^3.0.0",
+    "csv-parse": "^6.1.0",
+    "dotenv": "^17.2.3",
+    "express": "^5.1.0",
+    "jsonwebtoken": "^9.0.2",
+    "mongoose": "^8.20.0",
+    "mongoose-to-swagger": "^1.5.1",
+    "morgan": "^1.10.1",
+    "node-cron": "^4.2.1",
     "pdfkit": "^0.17.2",
     "swagger-jsdoc": "^6.2.8",
     "swagger-ui-express": "^5.0.1"
   },
   "devDependencies": {
-    "nodemon": "^3.0.0"
+    "nodemon": "^3.1.11"
   }
 }

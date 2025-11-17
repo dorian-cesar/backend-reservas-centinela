@@ -16,14 +16,14 @@ import BusLayout from "../models/BusLayout.js";
  *       content:
  *         application/json:
  *           schema:
- *             $ref: '#/components/schemas/ServiceTemplate'
+ *             $ref: '#/models/ServiceTemplate'
  *     responses:
  *       200:
  *         description: Template creado exitosamente.
  *         content:
  *           application/json:
  *             schema:
- *               $ref: '#/components/schemas/ServiceTemplate'
+ *               $ref: '#/models/ServiceTemplate'
  *       400:
  *         description: Error de validación o datos incorrectos.
  */
@@ -59,7 +59,7 @@ export const createTemplate = async (req, res) => {
  *             schema:
  *               type: array
  *               items:
- *                 $ref: '#/components/schemas/ServiceTemplate'
+ *                 $ref: '#/models/ServiceTemplate'
  *       500:
  *         description: Error interno del servidor.
  */
@@ -216,7 +216,7 @@ export const generateServices = async (req, res) => {
  *                 services:
  *                   type: array
  *                   items:
- *                     $ref: '#/components/schemas/GeneratedService'
+ *                     $ref: '#/models/GeneratedService'
  *       400:
  *         description: Falta el ID del template.
  *       404:
@@ -338,7 +338,7 @@ export const generateOne = async (req, res) => {
  *             schema:
  *               type: array
  *               items:
- *                 $ref: '#/components/schemas/GeneratedService'
+ *                 $ref: '#/models/GeneratedService'
  *       500:
  *         description: Error interno del servidor.
  */
@@ -397,7 +397,7 @@ export const listGeneratedServices = async (req, res) => {
  *             schema:
  *               type: array
  *               items:
- *                 $ref: '#/components/schemas/GeneratedService'
+ *                 $ref: '#/models/GeneratedService'
  *       400:
  *         description: Faltan parámetros requeridos.
  *       500:
