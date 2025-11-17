@@ -1,7 +1,36 @@
 import ServiceTemplate from "../models/ServiceTemplate.js";
 
 /**
- * Lista todas las ciudades de origen sin duplicar
+ * @swagger
+ * /cities/origins:
+ *   get:
+ *     summary: Lista todas las ciudades de origen sin duplicar.
+ *     tags:
+ *       - Cities
+ *     responses:
+ *       200:
+ *         description: Lista de ciudades de origen.
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 origins:
+ *                   type: array
+ *                   items:
+ *                     type: string
+ *       500:
+ *         description: Error interno del servidor.
+ */
+
+/**
+ * Lista todas las ciudades de origen sin duplicar.
+ *
+ * @function
+ * @async
+ * @param {import('express').Request} req - Objeto de solicitud HTTP.
+ * @param {import('express').Response} res - Objeto de respuesta HTTP.
+ * @returns {Promise<void>}
  */
 export const listOrigins = async (req, res) => {
   try {
@@ -13,15 +42,52 @@ export const listOrigins = async (req, res) => {
 };
 
 /**
- * Dado un origen, lista sus destinos asociados
- * /cities/destinations/:origin
+ * @swagger
+ * /cities/destinations/{origin}:
+ *   get:
+ *     summary: Lista los destinos asociados a un origen específico.
+ *     tags:
+ *       - Cities
+ *     parameters:
+ *       - in: path
+ *         name: origin
+ *         required: true
+ *         schema:
+ *           type: string
+ *         description: Ciudad de origen.
+ *     responses:
+ *       200:
+ *         description: Lista de destinos asociados al origen.
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 origin:
+ *                   type: string
+ *                 destinations:
+ *                   type: array
+ *                   items:
+ *                     type: string
+ *       500:
+ *         description: Error interno del servidor.
+ */
+
+/**
+ * Dado un origen, lista sus destinos asociados.
+ *
+ * @function
+ * @async
+ * @param {import('express').Request} req - Objeto de solicitud HTTP.
+ * @param {import('express').Response} res - Objeto de respuesta HTTP.
+ * @returns {Promise<void>}
  */
 export const listDestinationsByOrigin = async (req, res) => {
   try {
     const { origin } = req.params;
 
     const destinations = await ServiceTemplate.find({ origin }).distinct(
-      "destination"
+        "destination"
     );
 
     res.json({
@@ -34,8 +100,35 @@ export const listDestinationsByOrigin = async (req, res) => {
 };
 
 /**
- * Lista de origen → destinos agrupados
- * /cities/map
+ * @swagger
+ * /cities/map:
+ *   get:
+ *     summary: Obtiene un mapa de origen a destinos agrupados.
+ *     tags:
+ *       - Cities
+ *     responses:
+ *       200:
+ *         description: Mapa de ciudades de origen y sus destinos asociados.
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               additionalProperties:
+ *                 type: array
+ *                 items:
+ *                   type: string
+ *       500:
+ *         description: Error interno del servidor.
+ */
+
+/**
+ * Lista de origen → destinos agrupados.
+ *
+ * @function
+ * @async
+ * @param {import('express').Request} req - Objeto de solicitud HTTP.
+ * @param {import('express').Response} res - Objeto de respuesta HTTP.
+ * @returns {Promise<void>}
  */
 export const originDestinationMap = async (req, res) => {
   try {

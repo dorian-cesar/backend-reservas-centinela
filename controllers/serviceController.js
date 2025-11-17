@@ -4,9 +4,37 @@ import ServiceTemplate from "../models/ServiceTemplate.js";
 import GeneratedService from "../models/GeneratedService.js";
 import BusLayout from "../models/BusLayout.js";
 
-// ====================================================
-// Crear nuevo template
-// ====================================================
+/**
+ * @swagger
+ * /api/templates:
+ *   post:
+ *     summary: Crea un nuevo template de servicio.
+ *     tags:
+ *       - Templates
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             $ref: '#/components/schemas/ServiceTemplate'
+ *     responses:
+ *       200:
+ *         description: Template creado exitosamente.
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/ServiceTemplate'
+ *       400:
+ *         description: Error de validación o datos incorrectos.
+ */
+/**
+ * Crea un nuevo template de servicio.
+ * @function
+ * @async
+ * @param {import('express').Request} req - Objeto de solicitud HTTP.
+ * @param {import('express').Response} res - Objeto de respuesta HTTP.
+ * @returns {Promise<void>}
+ */
 export const createTemplate = async (req, res) => {
   try {
     const template = await ServiceTemplate.create(req.body);
@@ -16,9 +44,33 @@ export const createTemplate = async (req, res) => {
   }
 };
 
-// ====================================================
-// Listar templates
-// ====================================================
+/**
+ * @swagger
+ * /api/templates:
+ *   get:
+ *     summary: Lista todos los templates de servicio.
+ *     tags:
+ *       - Templates
+ *     responses:
+ *       200:
+ *         description: Lista de templates.
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: array
+ *               items:
+ *                 $ref: '#/components/schemas/ServiceTemplate'
+ *       500:
+ *         description: Error interno del servidor.
+ */
+/**
+ * Lista todos los templates de servicio.
+ * @function
+ * @async
+ * @param {import('express').Request} req - Objeto de solicitud HTTP.
+ * @param {import('express').Response} res - Objeto de respuesta HTTP.
+ * @returns {Promise<void>}
+ */
 export const listTemplates = async (req, res) => {
   try {
     const templates = await ServiceTemplate.find().populate("layout");
@@ -28,10 +80,36 @@ export const listTemplates = async (req, res) => {
   }
 };
 
-// ====================================================
-// Generar servicios por 14 días desde startDate
-// usando daysOfWeek [1..7]
-// ====================================================
+/**
+ * @swagger
+ * /api/services/generate:
+ *   post:
+ *     summary: Genera servicios para todos los templates por 14 días desde la fecha de inicio.
+ *     tags:
+ *       - Servicios
+ *     responses:
+ *       200:
+ *         description: Servicios generados exitosamente.
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
+ *       500:
+ *         description: Error interno del servidor.
+ */
+/**
+ * Genera servicios para todos los templates por 14 días desde la fecha de inicio,
+ * considerando los días de la semana especificados en cada template.
+ * Incluye la generación de asientos según el layout del bus.
+ * @function
+ * @async
+ * @param {import('express').Request} req - Objeto de solicitud HTTP.
+ * @param {import('express').Response} res - Objeto de respuesta HTTP.
+ * @returns {Promise<void>}
+ */
 export const generateServices = async (req, res) => {
   try {
     const templates = await ServiceTemplate.find();
@@ -109,6 +187,53 @@ export const generateServices = async (req, res) => {
   }
 };
 
+/**
+ * @swagger
+ * /api/services/generate/{id}:
+ *   post:
+ *     summary: Genera servicios para un template específico por 14 días desde la fecha de inicio.
+ *     tags:
+ *       - Servicios
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: string
+ *         description: ID del template.
+ *     responses:
+ *       200:
+ *         description: Servicios generados exitosamente para el template.
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
+ *                 count:
+ *                   type: integer
+ *                 services:
+ *                   type: array
+ *                   items:
+ *                     $ref: '#/components/schemas/GeneratedService'
+ *       400:
+ *         description: Falta el ID del template.
+ *       404:
+ *         description: Template no encontrado.
+ *       500:
+ *         description: Error interno del servidor.
+ */
+/**
+ * Genera servicios para un template específico por 14 días desde la fecha de inicio,
+ * considerando los días de la semana definidos en el template.
+ * Incluye la generación de asientos según el layout del bus.
+ * @function
+ * @async
+ * @param {import('express').Request} req - Objeto de solicitud HTTP.
+ * @param {import('express').Response} res - Objeto de respuesta HTTP.
+ * @returns {Promise<void>}
+ */
 export const generateOne = async (req, res) => {
   try {
     const templateId = req.params.id;
@@ -198,17 +323,38 @@ export const generateOne = async (req, res) => {
   }
 };
 
-
-
-
-// ====================================================
-// Listar servicios generados
-// ====================================================
+/**
+ * @swagger
+ * /api/services/generated:
+ *   get:
+ *     summary: Lista todos los servicios generados.
+ *     tags:
+ *       - Servicios
+ *     responses:
+ *       200:
+ *         description: Lista de servicios generados.
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: array
+ *               items:
+ *                 $ref: '#/components/schemas/GeneratedService'
+ *       500:
+ *         description: Error interno del servidor.
+ */
+/**
+ * Lista todos los servicios generados, incluyendo información del template y layout del bus.
+ * @function
+ * @async
+ * @param {import('express').Request} req - Objeto de solicitud HTTP.
+ * @param {import('express').Response} res - Objeto de respuesta HTTP.
+ * @returns {Promise<void>}
+ */
 export const listGeneratedServices = async (req, res) => {
   try {
     const services = await GeneratedService.find()
-      .populate("template")
-      .populate("busLayout");
+        .populate("template")
+        .populate("busLayout");
 
     res.json(services);
   } catch (error) {
@@ -216,12 +362,55 @@ export const listGeneratedServices = async (req, res) => {
   }
 };
 
-// ====================================================
-// Eliminar un tem
-// ====================================================
-// Buscar servicios por origen, destino y fecha
-// GET /api/services/search?origin=Santiago&destination=Antofagasta&date=2025-11-15
-// ====================================================
+/**
+ * @swagger
+ * /api/services/search:
+ *   get:
+ *     summary: Busca servicios generados por origen, destino y fecha.
+ *     tags:
+ *       - Servicios
+ *     parameters:
+ *       - in: query
+ *         name: origin
+ *         required: true
+ *         schema:
+ *           type: string
+ *         description: Ciudad de origen.
+ *       - in: query
+ *         name: destination
+ *         required: true
+ *         schema:
+ *           type: string
+ *         description: Ciudad de destino.
+ *       - in: query
+ *         name: date
+ *         required: true
+ *         schema:
+ *           type: string
+ *           format: date
+ *         description: Fecha del servicio (YYYY-MM-DD).
+ *     responses:
+ *       200:
+ *         description: Lista de servicios encontrados.
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: array
+ *               items:
+ *                 $ref: '#/components/schemas/GeneratedService'
+ *       400:
+ *         description: Faltan parámetros requeridos.
+ *       500:
+ *         description: Error interno del servidor.
+ */
+/**
+ * Busca servicios generados por origen, destino y fecha.
+ * @function
+ * @async
+ * @param {import('express').Request} req - Objeto de solicitud HTTP.
+ * @param {import('express').Response} res - Objeto de respuesta HTTP.
+ * @returns {Promise<void>}
+ */
 export const searchServices = async (req, res) => {
   try {
     const { origin, destination, date } = req.query;
@@ -240,8 +429,8 @@ export const searchServices = async (req, res) => {
       destination,
       date: { $gte: startOfDay, $lte: endOfDay },
     })
-      .populate("template")
-      .populate("busLayout");
+        .populate("template")
+        .populate("busLayout");
 
     res.json(services);
 

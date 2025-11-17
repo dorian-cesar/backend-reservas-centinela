@@ -2,9 +2,63 @@ import GeneratedService from "../models/GeneratedService.js";
 import Reservation from "../models/Reservation.js";
 
 /**
- * 1) Crear una reserva por 10 minutos
+ * @swagger
+ * /reservations:
+ *   post:
+ *     summary: Crea una reserva temporal de un asiento por 10 minutos.
+ *     description: Reserva un asiento específico para un usuario durante 10 minutos en un servicio generado.
+ *     tags:
+ *       - Reservations
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - userId
+ *               - serviceId
+ *               - seatNumber
+ *             properties:
+ *               userId:
+ *                 type: string
+ *                 description: ID del usuario que realiza la reserva.
+ *               serviceId:
+ *                 type: string
+ *                 description: ID del servicio donde se reserva el asiento.
+ *               seatNumber:
+ *                 type: string
+ *                 description: Número del asiento a reservar.
+ *     responses:
+ *       200:
+ *         description: Reserva creada exitosamente.
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
+ *                 reservation:
+ *                   $ref: '#/components/schemas/Reservation'
+ *                 expiresAt:
+ *                   type: string
+ *                   format: date-time
+ *       400:
+ *         description: Solicitud inválida o asiento no disponible.
+ *       404:
+ *         description: Servicio no encontrado.
+ *       500:
+ *         description: Error interno del servidor.
  */
-
+/**
+ * Crea una reserva temporal de un asiento por 10 minutos.
+ * @function
+ * @async
+ * @param {import('express').Request} req - Objeto de solicitud de Express.
+ * @param {import('express').Response} res - Objeto de respuesta de Express.
+ * @returns {Promise<void>}
+ */
 export const makeReservation = async (req, res) => {
   try {
     const { userId, serviceId, seatNumber } = req.body;
@@ -15,7 +69,7 @@ export const makeReservation = async (req, res) => {
 
     const cleanInput = seatNumber.trim().toUpperCase();
     const seat = service.seats.find(
-      (s) => s.seatNumber.trim().toUpperCase() === cleanInput
+        (s) => s.seatNumber.trim().toUpperCase() === cleanInput
     );
 
     if (!seat) {
@@ -58,7 +112,55 @@ export const makeReservation = async (req, res) => {
 };
 
 /**
- * 2) Confirmar reserva después del pago
+ * @swagger
+ * /reservations/confirm:
+ *   post:
+ *     summary: Confirma una reserva después del pago.
+ *     description: Confirma una reserva existente, marcando el asiento como confirmado tras el pago.
+ *     tags:
+ *       - Reservations
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - reservationId
+ *               - authorizationCode
+ *             properties:
+ *               reservationId:
+ *                 type: string
+ *                 description: ID de la reserva a confirmar.
+ *               authorizationCode:
+ *                 type: string
+ *                 description: Código de autorización del pago.
+ *     responses:
+ *       200:
+ *         description: Reserva confirmada exitosamente.
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
+ *                 reservation:
+ *                   $ref: '#/components/schemas/Reservation'
+ *       400:
+ *         description: Reserva no activa o asiento no existe.
+ *       404:
+ *         description: Reserva no encontrada.
+ *       500:
+ *         description: Error interno del servidor.
+ */
+/**
+ * Confirma una reserva después del pago.
+ * @function
+ * @async
+ * @param {import('express').Request} req - Objeto de solicitud de Express.
+ * @param {import('express').Response} res - Objeto de respuesta de Express.
+ * @returns {Promise<void>}
  */
 export const confirmReservation = async (req, res) => {
   try {
@@ -73,7 +175,7 @@ export const confirmReservation = async (req, res) => {
 
     const service = await GeneratedService.findById(reservation.service);
     const seat = service.seats.find(
-      (s) => s.seatNumber === reservation.seatNumber
+        (s) => s.seatNumber === reservation.seatNumber
     );
 
     if (!seat) return res.status(400).json({ message: "Asiento no existe" });
@@ -111,7 +213,51 @@ export const confirmReservation = async (req, res) => {
 };
 
 /**
- * 3) Liberar asiento manualmente o por cancelación
+ * @swagger
+ * /reservations/release:
+ *   post:
+ *     summary: Libera un asiento manualmente o por cancelación.
+ *     description: Cambia el estado de la reserva y del asiento a liberado.
+ *     tags:
+ *       - Reservations
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - reservationId
+ *             properties:
+ *               reservationId:
+ *                 type: string
+ *                 description: ID de la reserva a liberar.
+ *     responses:
+ *       200:
+ *         description: Asiento liberado exitosamente.
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
+ *                 reservation:
+ *                   $ref: '#/components/schemas/Reservation'
+ *       400:
+ *         description: Asiento no existe.
+ *       404:
+ *         description: Reserva no encontrada.
+ *       500:
+ *         description: Error interno del servidor.
+ */
+/**
+ * Libera un asiento manualmente o por cancelación.
+ * @function
+ * @async
+ * @param {import('express').Request} req - Objeto de solicitud de Express.
+ * @param {import('express').Response} res - Objeto de respuesta de Express.
+ * @returns {Promise<void>}
  */
 export const releaseSeat = async (req, res) => {
   try {
@@ -123,7 +269,7 @@ export const releaseSeat = async (req, res) => {
 
     const service = await GeneratedService.findById(reservation.service);
     const seat = service.seats.find(
-      (s) => s.seatNumber === reservation.seatNumber
+        (s) => s.seatNumber === reservation.seatNumber
     );
 
     if (!seat) return res.status(400).json({ message: "Asiento no existe" });
@@ -145,6 +291,84 @@ export const releaseSeat = async (req, res) => {
   }
 };
 
+/**
+ * @swagger
+ * /reservations/release-with-validation:
+ *   post:
+ *     summary: Libera un asiento con validación de tiempo y permisos.
+ *     description: Libera un asiento reservado o confirmado por el usuario, validando que el usuario tenga permisos y que el asiento pertenezca a él.
+ *     tags:
+ *       - Reservations
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - userId
+ *               - serviceId
+ *               - seatNumber
+ *             properties:
+ *               userId:
+ *                 type: string
+ *                 description: ID del usuario que solicita la liberación.
+ *               serviceId:
+ *                 type: string
+ *                 description: ID del servicio.
+ *               seatNumber:
+ *                 type: string
+ *                 description: Número del asiento a liberar.
+ *     responses:
+ *       200:
+ *         description: Asiento liberado exitosamente.
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
+ *                 reservation:
+ *                   type: object
+ *                   properties:
+ *                     id:
+ *                       type: string
+ *                     seatNumber:
+ *                       type: string
+ *                     status:
+ *                       type: string
+ *                     releasedAt:
+ *                       type: string
+ *                       format: date-time
+ *                 serviceInfo:
+ *                   type: object
+ *                   properties:
+ *                     date:
+ *                       type: string
+ *                     time:
+ *                       type: string
+ *                     origin:
+ *                       type: string
+ *                     destination:
+ *                       type: string
+ *       400:
+ *         description: Solicitud inválida o asiento no reservado.
+ *       403:
+ *         description: El usuario no tiene permisos para liberar el asiento.
+ *       404:
+ *         description: Servicio o reserva no encontrada.
+ *       500:
+ *         description: Error interno del servidor.
+ */
+/**
+ * Libera un asiento con validación de tiempo y permisos.
+ * @function
+ * @async
+ * @param {import('express').Request} req - Objeto de solicitud de Express.
+ * @param {import('express').Response} res - Objeto de respuesta de Express.
+ * @returns {Promise<void>}
+ */
 export const releaseSeatWithTimeValidation = async (req, res) => {
   try {
     const { userId, serviceId, seatNumber } = req.body;
@@ -181,7 +405,7 @@ export const releaseSeatWithTimeValidation = async (req, res) => {
     // Buscar el asiento en el servicio
     const cleanInput = seatNumber.trim().toUpperCase();
     const seat = service.seats.find(
-      (s) => s.seatNumber.trim().toUpperCase() === cleanInput
+        (s) => s.seatNumber.trim().toUpperCase() === cleanInput
     );
 
     if (!seat) {
@@ -265,7 +489,70 @@ export const releaseSeatWithTimeValidation = async (req, res) => {
 };
 
 /**
- * 5) Obtener reservas de un usuario con información del servicio
+ * @swagger
+ * /reservations/user/{userId}/active:
+ *   get:
+ *     summary: Obtiene las reservas activas de un usuario con información del servicio.
+ *     description: Retorna las reservas activas (reserved o confirmed) de un usuario, incluyendo información relevante del servicio y si puede liberarse.
+ *     tags:
+ *       - Reservations
+ *     parameters:
+ *       - in: path
+ *         name: userId
+ *         required: true
+ *         schema:
+ *           type: string
+ *         description: ID del usuario.
+ *     responses:
+ *       200:
+ *         description: Lista de reservas activas del usuario.
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 reservations:
+ *                   type: array
+ *                   items:
+ *                     type: object
+ *                     properties:
+ *                       reservationId:
+ *                         type: string
+ *                       seatNumber:
+ *                         type: string
+ *                       status:
+ *                         type: string
+ *                       createdAt:
+ *                         type: string
+ *                         format: date-time
+ *                       serviceId:
+ *                         type: string
+ *                       serviceDate:
+ *                         type: string
+ *                       serviceTime:
+ *                         type: string
+ *                       origin:
+ *                         type: string
+ *                       destination:
+ *                         type: string
+ *                       canBeReleased:
+ *                         type: boolean
+ *                       timeRemaining:
+ *                         type: string
+ *                       hoursRemaining:
+ *                         type: number
+ *                 total:
+ *                   type: integer
+ *       500:
+ *         description: Error interno del servidor.
+ */
+/**
+ * Obtiene las reservas activas de un usuario con información del servicio.
+ * @function
+ * @async
+ * @param {import('express').Request} req - Objeto de solicitud de Express.
+ * @param {import('express').Response} res - Objeto de respuesta de Express.
+ * @returns {Promise<void>}
  */
 export const getUserActiveReservations = async (req, res) => {
   try {
@@ -276,8 +563,8 @@ export const getUserActiveReservations = async (req, res) => {
       user: userId,
       status: { $in: ["reserved", "confirmed"] },
     })
-      .populate("service")
-      .sort({ createdAt: -1 });
+        .populate("service")
+        .sort({ createdAt: -1 });
 
     // Enriquecer con información de tiempo restante y si puede liberarse
     const activeReservations = reservations.map((reservation) => {
@@ -313,16 +600,71 @@ export const getUserActiveReservations = async (req, res) => {
 };
 
 /**
- * 6) Obtener historial de reservas (todas incluyendo released, cancelled, expired)
+ * @swagger
+ * /reservations/user/{userId}/history:
+ *   get:
+ *     summary: Obtiene el historial de reservas de un usuario.
+ *     description: Retorna el historial de reservas de un usuario, incluyendo todas las reservas (released, cancelled, expired, etc.).
+ *     tags:
+ *       - Reservations
+ *     parameters:
+ *       - in: path
+ *         name: userId
+ *         required: true
+ *         schema:
+ *           type: string
+ *         description: ID del usuario.
+ *     responses:
+ *       200:
+ *         description: Historial de reservas del usuario.
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 history:
+ *                   type: array
+ *                   items:
+ *                     type: object
+ *                     properties:
+ *                       reservationId:
+ *                         type: string
+ *                       seatNumber:
+ *                         type: string
+ *                       status:
+ *                         type: string
+ *                       createdAt:
+ *                         type: string
+ *                         format: date-time
+ *                       serviceDate:
+ *                         type: string
+ *                       serviceTime:
+ *                         type: string
+ *                       origin:
+ *                         type: string
+ *                       destination:
+ *                         type: string
+ *                 total:
+ *                   type: integer
+ *       500:
+ *         description: Error interno del servidor.
+ */
+/**
+ * Obtiene el historial de reservas de un usuario (todas incluyendo released, cancelled, expired).
+ * @function
+ * @async
+ * @param {import('express').Request} req - Objeto de solicitud de Express.
+ * @param {import('express').Response} res - Objeto de respuesta de Express.
+ * @returns {Promise<void>}
  */
 export const getUserReservationHistory = async (req, res) => {
   try {
     const { userId } = req.params;
 
     const reservations = await Reservation.find({ user: userId })
-      .populate("service")
-      .sort({ createdAt: -1 })
-      .limit(50); // Limitar historial
+        .populate("service")
+        .sort({ createdAt: -1 })
+        .limit(50); // Limitar historial
 
     const history = reservations.map((reservation) => {
       const service = reservation.service;
