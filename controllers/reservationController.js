@@ -90,7 +90,7 @@ export const confirmReservation = async (req, res) => {
     // Confirmar asiento
     seat.confirmed = true;
     seat.confirmedBy = reservation.user;
-    // seat.reserved = false;
+    seat.reserved = true;
     // seat.reservedBy = null;
 
     await service.save();
@@ -125,7 +125,7 @@ export const releaseSeat = async (req, res) => {
     if (!seat) return res.status(400).json({ message: "Asiento no existe" });
 
     // Liberar asiento
-    seat.reserved = false;
+    seat.reserved = true;
     seat.reservedBy = null;
     seat.reservationExpiresAt = null;
 
