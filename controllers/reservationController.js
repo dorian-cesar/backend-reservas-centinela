@@ -69,7 +69,7 @@ export const makeReservation = async (req, res) => {
 
     const cleanInput = seatNumber.trim().toUpperCase();
     const seat = service.seats.find(
-        (s) => s.seatNumber.trim().toUpperCase() === cleanInput
+      (s) => s.seatNumber.trim().toUpperCase() === cleanInput
     );
 
     if (!seat) {
@@ -175,7 +175,7 @@ export const confirmReservation = async (req, res) => {
 
     const service = await GeneratedService.findById(reservation.service);
     const seat = service.seats.find(
-        (s) => s.seatNumber === reservation.seatNumber
+      (s) => s.seatNumber === reservation.seatNumber
     );
 
     if (!seat) return res.status(400).json({ message: "Asiento no existe" });
@@ -269,7 +269,7 @@ export const releaseSeat = async (req, res) => {
 
     const service = await GeneratedService.findById(reservation.service);
     const seat = service.seats.find(
-        (s) => s.seatNumber === reservation.seatNumber
+      (s) => s.seatNumber === reservation.seatNumber
     );
 
     if (!seat) return res.status(400).json({ message: "Asiento no existe" });
@@ -405,7 +405,7 @@ export const releaseSeatWithTimeValidation = async (req, res) => {
     // Buscar el asiento en el servicio
     const cleanInput = seatNumber.trim().toUpperCase();
     const seat = service.seats.find(
-        (s) => s.seatNumber.trim().toUpperCase() === cleanInput
+      (s) => s.seatNumber.trim().toUpperCase() === cleanInput
     );
 
     if (!seat) {
@@ -563,8 +563,8 @@ export const getUserActiveReservations = async (req, res) => {
       user: userId,
       status: { $in: ["reserved", "confirmed"] },
     })
-        .populate("service")
-        .sort({ createdAt: -1 });
+      .populate("service")
+      .sort({ createdAt: -1 });
 
     // Enriquecer con información de tiempo restante y si puede liberarse
     const activeReservations = reservations.map((reservation) => {
@@ -662,9 +662,9 @@ export const getUserReservationHistory = async (req, res) => {
     const { userId } = req.params;
 
     const reservations = await Reservation.find({ user: userId })
-        .populate("service")
-        .sort({ createdAt: -1 })
-        .limit(50); // Limitar historial
+      .populate("service")
+      .sort({ createdAt: -1 })
+      .limit(50); // Limitar historial
 
     const history = reservations.map((reservation) => {
       const service = reservation.service;
@@ -687,6 +687,102 @@ export const getUserReservationHistory = async (req, res) => {
     });
   } catch (error) {
     console.error("Error obteniendo historial:", error);
+    res.status(500).json({ message: "Error interno del servidor" });
+  }
+};
+
+
+export const getUserReservedSeats = async (req, res) => {
+  try {
+    const { userId } = req.params;
+
+    // Buscar solo reservas temporales (reserved)
+    const reservations = await Reservation.find({
+      user: userId,
+      status: "reserved"
+    })
+      .populate("service")
+      .sort({ createdAt: -1 });
+
+    // Enriquecer con información de tiempo restante para la reserva
+    const reservedSeats = reservations.map((reservation) => {
+      const service = reservation.service;
+      const now = new Date();
+      const reservationExpiresAt = new Date(reservation.expiresAt);
+      const reservationTimeLeft = (reservationExpiresAt - now) / (1000 * 60); // minutos restantes
+
+      const serviceDateTime = new Date(service.date);
+      const timeDiffHours = (serviceDateTime - now) / (1000 * 60 * 60);
+
+      return {
+        reservationId: reservation._id,
+        seatNumber: reservation.seatNumber,
+        status: reservation.status,
+        createdAt: reservation.createdAt,
+        expiresAt: reservation.expiresAt,
+        minutesLeft: Math.max(0, Math.floor(reservationTimeLeft)),
+        serviceId: service._id,
+        serviceDate: service.date,
+        serviceTime: service.time,
+        origin: service.origin,
+        destination: service.destination,
+        canBeReleased: timeDiffHours > 48,
+        timeRemaining: `${Math.max(0, timeDiffHours).toFixed(1)} horas`,
+        hoursRemaining: timeDiffHours,
+      };
+    });
+
+    res.json({
+      reservedSeats,
+      total: reservedSeats.length,
+    });
+  } catch (error) {
+    console.error("Error obteniendo asientos reservados:", error);
+    res.status(500).json({ message: "Error interno del servidor" });
+  }
+};
+
+export const getUserConfirmedReservations = async (req, res) => {
+  try {
+    const { userId } = req.params;
+
+    // Buscar solo reservas confirmadas
+    const reservations = await Reservation.find({
+      user: userId,
+      status: "confirmed"
+    })
+      .populate("service")
+      .sort({ createdAt: -1 });
+
+    // Enriquecer con información de tiempo restante para liberación
+    const confirmedReservations = reservations.map((reservation) => {
+      const service = reservation.service;
+      const now = new Date();
+      const serviceDateTime = new Date(service.date);
+      const timeDiffHours = (serviceDateTime - now) / (1000 * 60 * 60);
+
+      return {
+        reservationId: reservation._id,
+        seatNumber: reservation.seatNumber,
+        status: reservation.status,
+        createdAt: reservation.createdAt,
+        serviceId: service._id,
+        serviceDate: service.date,
+        serviceTime: service.time,
+        origin: service.origin,
+        destination: service.destination,
+        canBeReleased: timeDiffHours > 48,
+        timeRemaining: `${Math.max(0, timeDiffHours).toFixed(1)} horas`,
+        hoursRemaining: timeDiffHours,
+      };
+    });
+
+    res.json({
+      confirmedReservations,
+      total: confirmedReservations.length,
+    });
+  } catch (error) {
+    console.error("Error obteniendo reservas confirmadas:", error);
     res.status(500).json({ message: "Error interno del servidor" });
   }
 };
