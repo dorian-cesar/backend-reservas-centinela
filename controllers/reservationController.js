@@ -657,7 +657,7 @@ export const getUserReservationHistory = async (req, res) => {
  * /api/reservations/user/{userId}/reserved:
  *   get:
  *     summary: Obtiene los asientos reservados temporalmente por un usuario.
- *     description: | Retorna las reservas temporales (status: reserved) de un usuario, incluyendo información de tiempo restante y si puede liberarse.
+ *     description: "Retorna las reservas temporales (status: reserved) de un usuario, incluyendo información de tiempo restante y si puede liberarse."
  *     tags:
  *       - Reservations
  *     parameters:
