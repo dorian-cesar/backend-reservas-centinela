@@ -90,8 +90,8 @@ export const confirmReservation = async (req, res) => {
     // Confirmar asiento
     seat.confirmed = true;
     seat.confirmedBy = reservation.user;
-    seat.reserved = false;
-    seat.reservedBy = null;
+    // seat.reserved = false;
+    // seat.reservedBy = null;
 
     await service.save();
 
@@ -141,8 +141,6 @@ export const releaseSeat = async (req, res) => {
   }
 };
 
-
-
 export const releaseSeatWithTimeValidation = async (req, res) => {
   try {
     const { userId, serviceId, seatNumber } = req.body;
@@ -150,7 +148,7 @@ export const releaseSeatWithTimeValidation = async (req, res) => {
     // Validar datos requeridos
     if (!userId || !serviceId || !seatNumber) {
       return res.status(400).json({
-        message: "Se requieren userId, serviceId y seatNumber"
+        message: "Se requieren userId, serviceId y seatNumber",
       });
     }
 
@@ -169,9 +167,10 @@ export const releaseSeatWithTimeValidation = async (req, res) => {
 
     if (timeDiffHours <= 48) {
       return res.status(400).json({
-        message: "No se puede liberar el asiento. Faltan menos de 48 horas para el servicio",
+        message:
+          "No se puede liberar el asiento. Faltan menos de 48 horas para el servicio",
         timeRemaining: `${timeDiffHours.toFixed(1)} horas`,
-        cutoffTime: "48 horas antes del servicio"
+        cutoffTime: "48 horas antes del servicio",
       });
     }
 
@@ -184,28 +183,28 @@ export const releaseSeatWithTimeValidation = async (req, res) => {
     if (!seat) {
       return res.status(400).json({
         message: "Asiento no existe en este servicio",
-        debug: { buscado: cleanInput }
+        debug: { buscado: cleanInput },
       });
     }
 
     // Verificar que el asiento esté reservado/confirmado por el usuario
     if (!seat.reserved && !seat.confirmed) {
       return res.status(400).json({
-        message: "El asiento no está reservado"
+        message: "El asiento no está reservado",
       });
     }
 
     // Si está confirmado, verificar que pertenezca al usuario
     if (seat.confirmed && seat.confirmedBy.toString() !== userId.toString()) {
       return res.status(403).json({
-        message: "No tienes permisos para liberar este asiento"
+        message: "No tienes permisos para liberar este asiento",
       });
     }
 
     // Si está reservado, verificar que pertenezca al usuario
     if (seat.reserved && seat.reservedBy.toString() !== userId.toString()) {
       return res.status(403).json({
-        message: "No tienes permisos para liberar este asiento"
+        message: "No tienes permisos para liberar este asiento",
       });
     }
 
@@ -214,12 +213,12 @@ export const releaseSeatWithTimeValidation = async (req, res) => {
       user: userId,
       service: serviceId,
       seatNumber: cleanInput,
-      status: { $in: ["reserved", "confirmed"] }
+      status: { $in: ["reserved", "confirmed"] },
     });
 
     if (!reservation) {
       return res.status(404).json({
-        message: "No se encontró una reserva activa para este asiento"
+        message: "No se encontró una reserva activa para este asiento",
       });
     }
 
@@ -243,21 +242,20 @@ export const releaseSeatWithTimeValidation = async (req, res) => {
         id: reservation._id,
         seatNumber: reservation.seatNumber,
         status: reservation.status,
-        releasedAt: reservation.releasedAt
+        releasedAt: reservation.releasedAt,
       },
       serviceInfo: {
         date: service.date,
         time: service.time,
         origin: service.origin,
-        destination: service.destination
-      }
+        destination: service.destination,
+      },
     });
-
   } catch (error) {
     console.error("Error liberando asiento:", error);
     res.status(500).json({
       message: "Error interno del servidor",
-      error: error.message
+      error: error.message,
     });
   }
 };
@@ -272,13 +270,13 @@ export const getUserActiveReservations = async (req, res) => {
     // Buscar solo reservas activas (reserved o confirmed)
     const reservations = await Reservation.find({
       user: userId,
-      status: { $in: ["reserved", "confirmed"] }
+      status: { $in: ["reserved", "confirmed"] },
     })
       .populate("service")
       .sort({ createdAt: -1 });
 
     // Enriquecer con información de tiempo restante y si puede liberarse
-    const activeReservations = reservations.map(reservation => {
+    const activeReservations = reservations.map((reservation) => {
       const service = reservation.service;
       const now = new Date();
       const serviceDateTime = new Date(service.date);
@@ -296,15 +294,14 @@ export const getUserActiveReservations = async (req, res) => {
         destination: service.destination,
         canBeReleased: timeDiffHours > 48,
         timeRemaining: `${Math.max(0, timeDiffHours).toFixed(1)} horas`,
-        hoursRemaining: timeDiffHours
+        hoursRemaining: timeDiffHours,
       };
     });
 
     res.json({
       reservations: activeReservations,
-      total: activeReservations.length
+      total: activeReservations.length,
     });
-
   } catch (error) {
     console.error("Error obteniendo reservas activas:", error);
     res.status(500).json({ message: "Error interno del servidor" });
@@ -323,7 +320,7 @@ export const getUserReservationHistory = async (req, res) => {
       .sort({ createdAt: -1 })
       .limit(50); // Limitar historial
 
-    const history = reservations.map(reservation => {
+    const history = reservations.map((reservation) => {
       const service = reservation.service;
 
       return {
@@ -334,15 +331,14 @@ export const getUserReservationHistory = async (req, res) => {
         serviceDate: service?.date || null,
         serviceTime: service?.time || null,
         origin: service?.origin || null,
-        destination: service?.destination || null
+        destination: service?.destination || null,
       };
     });
 
     res.json({
       history,
-      total: history.length
+      total: history.length,
     });
-
   } catch (error) {
     console.error("Error obteniendo historial:", error);
     res.status(500).json({ message: "Error interno del servidor" });
