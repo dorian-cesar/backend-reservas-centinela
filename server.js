@@ -3,6 +3,7 @@ import dotenv from "dotenv";
 import cors from "cors";
 import connectDB from "./config/db.js";
 import startExtendServicesCron from "./crons/extendServicesCron.js";
+import startSeatReleaseCron from "./crons/seatReleaseCron.js";
 
 import authRoutes from "./routes/authRoutes.js";
 import userRoutes from "./routes/userRoutes.js";
@@ -33,6 +34,7 @@ const PORT = process.env.PORT || 4000;
 connectDB()
     .then(() => {
         startExtendServicesCron();
+        startSeatReleaseCron();
         app.listen(PORT, () => console.log(`🚍 Servidor corriendo en puerto ${PORT}`));
     })
     .catch((err) => {

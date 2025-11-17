@@ -5,9 +5,12 @@ const reservationSchema = new mongoose.Schema({
   service: { type: mongoose.Schema.Types.ObjectId, ref: "GeneratedService" },
   seatNumber: String,
   createdAt: { type: Date, default: Date.now },
+  expiresAt: Date,
+  releasedAt: Date,
+  releaseReason: String,
   status: {
     type: String,
-    enum: ["reserved", "pending", "confirmed", "cancelled", "released"],
+    enum: ["reserved", "pending", "confirmed", "cancelled", "released", "expired"],
   },
 });
 
