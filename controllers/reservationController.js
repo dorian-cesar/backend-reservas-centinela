@@ -849,7 +849,7 @@ export const getUserConfirmedReservations = async (req, res) => {
 
       // Filtrar solo los asientos confirmados por este usuario
       const userConfirmedSeats = service.seats.filter(seat =>
-        seat.confirmed && seat.confirmedBy?.toString() === userId
+        seat.confirmed && seat.reservedBy?.toString() === userId
       );
 
       // Si no hay asientos confirmados (por seguridad), saltar este servicio
@@ -869,7 +869,7 @@ export const getUserConfirmedReservations = async (req, res) => {
         // Información específica del usuario
         userConfirmedSeats: userConfirmedSeats.map(seat => ({
           seatNumber: seat.seatNumber,
-          confirmedAt: seat.reservationExpiresAt, // Podrías agregar un campo confirmedAt si lo necesitas
+          // confirmedAt: seat.reservationExpiresAt, // Podrías agregar un campo confirmedAt si lo necesitas
         })),
         canBeReleased: timeDiffHours > 48,
         timeRemaining: `${Math.max(0, timeDiffHours).toFixed(1)} horas`,
