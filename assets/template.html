@@ -1,0 +1,155 @@
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&amp;display=swap" rel="stylesheet">
+<div style="width:580px;margin:0 auto;background-color:#f8f8f8;color:#464647;  font-family: 'Plus Jakarta Sans', sans-serif;">
+
+    <div style="margin:0 auto;width:580px">
+
+        <table style="width:100%;padding-top:50px">
+            <tbody>
+            <tr>
+                <td style="text-align:center">
+                    <img alt="pullman_logo" height="50px" src="http://cdn.mcauto-images-production.sendgrid.net/b4fb653bebbe40ed/d7a2634b-8550-4709-9539-22588a50ea33/3472x1049.png">
+                </td>
+            </tr>
+            <tr>
+                <td style="text-align:center">
+                    <p style="font-size:25px;margin-bottom:0;margin-top:15px;font-weight:bold">¡Todo listo!</p>
+                    <hr style="width:60px;border:2px solid #f7c938">
+                    <p style="font-size:20px;margin-top:0">tu pasaje fue confirmado con éxito.</p>
+                </td>
+            </tr>
+            </tbody>
+        </table>
+    </div>
+
+    <div style="width:480px;margin:15px auto">
+        <table style="width:100%;border-spacing:10px 20px;border-radius:20px;background-color:#ffffff">
+            <thead>
+            <tr>
+                <th style="text-align:center;padding-bottom:25px" colspan="4">
+                    <p style="font-size:18px;font-weight:bold">Detalle de tu compra</p>
+                    <span style="background:#013ba7;padding:10px 20px;border-radius:20px;color:#ffffff;font-size:15px;text-transform:uppercase;font-weight:normal">
+              N° de Reserva: <span style="font-weight:bold">{{reservation_number}}</span>
+            </span>
+                </th>
+            </tr>
+            </thead>
+            <tbody>
+            <tr>
+                <td style="text-align:right;width:15%"><img alt="origin" width="30px" style="margin-bottom:10px" src="https://cdn-assets.preprod-pullmanbus.kupos.cl/assets/pullman/origin-2a052b085247ca3c20913ebeb5b0dc66d34f097fa957aa0530f9089ed7932b71.png"></td>
+                <td style="font-size:14px">
+                    <p style="margin:0;text-transform:uppercase;font-weight:bold">Origen</p>
+                    <p style="margin-top:0">{{origin}}</p>
+                </td>
+                <td style="text-align:right"><img alt="destination" width="30px" style="margin-bottom:10px" src="https://cdn-assets.preprod-pullmanbus.kupos.cl/assets/pullman/destination-bdbcad2d1ba22d2816f524c662c7e24df1468a6c660c7035020961fb97df69db.png"></td>
+                <td style="font-size:14px">
+                    <p style="margin:0;text-transform:uppercase;font-weight:bold">Destino</p>
+                    <p style="margin-top:0">{{destination}}</p>
+                </td>
+            </tr>
+            <tr>
+                <td style="text-align:right"><img alt="ticket" width="30px" style="margin-bottom:10px" src="https://cdn-assets.preprod-pullmanbus.kupos.cl/assets/kupos/ticket-8653f7a9420d0888b9894054970a2c8681e47403c76bf2751327900bd8c028a6.png"></td>
+                <td style="font-size:14px">
+                    <p style="margin:0;text-transform:uppercase;font-weight:bold">N° de Reserva</p>
+                    <p style="margin-top:0">{{reservation_number}}</p>
+                </td>
+                <td style="text-align:right"><img alt="bus_company" width="30px" style="margin-bottom:10px" src="https://cdn-assets.preprod-pullmanbus.kupos.cl/assets/kupos/bus_company-41d09a9e81088df008f61bb117bd2a829c7c89e5f1ca55178680272ac2fcccb7.png"></td>
+                <td style="font-size:14px">
+                    <p style="margin:0;text-transform:uppercase;font-weight:bold">Empresa</p>
+                    <p style="margin-top:0">{{bus_company}}</p>
+                </td>
+            </tr>
+            <tr>
+                <td style="text-align:right"><img alt="calendar" width="30px" style="margin-bottom:10px" src="https://cdn-assets.preprod-pullmanbus.kupos.cl/assets/kupos/calendar-45af2ee9d6a69426b7f83792f7288abf66f33f49a384661b32dbfc9c9a5eb61c.png"></td>
+                <td style="font-size:14px">
+                    <p style="margin:0;text-transform:uppercase;font-weight:bold">Fecha de viaje</p>
+                    <p style="margin-top:0">{{travel_date}}</p>
+                </td>
+                <td style="text-align:right"><img alt="timer" width="30px" style="margin-bottom:10px" src="https://cdn-assets.preprod-pullmanbus.kupos.cl/assets/kupos/timer-3ffea3c93a5c1e2449e416591b4029536ee1e0311e770b429da2f19bdd29e09f.png"></td>
+                <td style="font-size:14px">
+                    <p style="margin:0;text-transform:uppercase;font-weight:bold">Horario Salida</p>
+                    <p style="margin-top:0">{{departure_time}}</p>
+                </td>
+            </tr>
+            <tr>
+                <td colspan="4" style="text-align:center">
+                    <a href="{{ticket_url}}" style="background:#013ba7;outline:none;border:none;color:#ffffff;text-transform:uppercase;padding:8px 20px;border-radius:50px;text-decoration:none" target="_blank">
+                        Descarga tu <span style="font-weight:bold">pasaje</span>
+                    </a>
+                </td>
+            </tr>
+            </tbody>
+        </table>
+
+        <table style="width:100%;border-spacing:0 15px">
+            <thead>
+            <tr>
+                <th colspan="4" style="text-align:center;font-size:18px;font-weight:bold">Por favor recuerda</th>
+            </tr>
+            </thead>
+            <tbody>
+            <tr>
+                <td><img alt="ticket" width="40px" src="https://cdn-assets.preprod-pullmanbus.kupos.cl/assets/pullman/ticket_blue-6a4aa55a2d0d63fc0f8603e19d54ff4343c5317a5c0265832aaf4054b524e440.png"></td>
+                <td style="font-size:12px;text-align:justify;padding:0 20px 0 10px">Tu pasaje es válido solo para la fecha y hora señalada.</td>
+                <td><img alt="print" width="40px" src="https://cdn-assets.preprod-pullmanbus.kupos.cl/assets/pullman/print_blue-1eabc430551959d9be6a18fe096e300f65d0bfd2e60da865aa3f75c3abafd509.png"></td>
+                <td style="font-size:12px;text-align:justify;padding-left:10px">Presenta tu boleto en el formato indicado: impreso o digital.</td>
+            </tr>
+            <tr>
+                <td><img alt="calendar" width="40px" src="https://cdn-assets.preprod-pullmanbus.kupos.cl/assets/pullman/calendar_blue-7e293eca8395c3ccd5e0531d5a7c622bc358682d5ff195addd5a2109d9fa3867.png"></td>
+                <td style="font-size:12px;text-align:justify;padding:0 20px 0 10px">No podrás hacer cambios en la fecha ni datos de tu pasaje.</td>
+                <td><img alt="cancel_ticket" width="40px" src="https://cdn-assets.preprod-pullmanbus.kupos.cl/assets/pullman/cancel_blue-352ccda0db220393b710903052967bb3a74a21c0a6b2388a9b3256ca81522e81.png"></td>
+                <td style="font-size:12px;text-align:justify;padding-left:10px">Podrás anular tu pasaje hasta cuatro 4 horas antes de la hora de salida.</td>
+            </tr>
+            </tbody>
+        </table>
+
+        <table style="width:100%;border-collapse:separate;border-spacing:10px 25px;text-align:center">
+            <thead>
+            <tr>
+                <th colspan="2" style="text-align:center;font-size:18px;font-weight:bold">En caso de dudas o consultas, contáctanos:</th>
+            </tr>
+            </thead>
+            <tbody>
+            <tr>
+                <td>
+                    <img alt="phone" width="45px" src="https://cdn-assets.preprod-pullmanbus.kupos.cl/assets/pullman/phone_blue-61ab57b299f09329b550cb72aa0e1f7be23220b7de2cc48ec9649aadc2e0daa1.png">
+                    <p style="margin-top:15px;font-size:14px;font-weight:bold">+56 2 3304 8632</p>
+                </td>
+                <td>
+                    <img alt="email" width="45px" src="https://cdn-assets.preprod-pullmanbus.kupos.cl/assets/pullman/email_blue-aa5bfa90682ade3ba3aa5f1acdad36b8435978afb4d0356342db4c601ed1f869.png">
+                    <p style="margin-top:15px;font-size:14px">
+                        <a href="mailto:clientes@pullmanbus.cl" style="color:#464647;text-decoration:none;font-weight:bold" target="_blank">clientes@pullmanbus.cl</a>
+                    </p>
+                </td>
+            </tr>
+            </tbody>
+        </table>
+    </div>
+
+    <div style="margin:0 auto;width:580px">
+        <table style="width:100%;text-align:center">
+            <tbody>
+            <tr>
+                <td>
+                    <p style="font-size:14px;font-weight:bold">Síguenos</p>
+                    <a href="https://www.facebook.com/pullmanbus" target="_blank"><img alt="fb" width="30px" style="margin-right:20px" src="https://cdn-assets.preprod-pullmanbus.kupos.cl/assets/pullman/fb-ff53b5ae7f2684b29adc4bd948cf6115a08b7f09a51b4af578dcbe6f084f3205.png"></a>
+                    <a href="https://www.instagram.com/pullmanbus" target="_blank"><img alt="insta" width="30px" style="margin-right:20px" src="https://cdn-assets.preprod-pullmanbus.kupos.cl/assets/pullman/insta-41d243df6c5a1e116147ec2de3d17cecdd763f91282d39a751cb7680c401e411.png"></a>
+                    <a href="https://www.linkedin.com/company/pullmanbus" target="_blank"><img alt="linkedin" width="30px" style="margin-right:20px" src="https://cdn-assets.preprod-pullmanbus.kupos.cl/assets/pullman/linkedin-4497bb4ad379443efd72aedf800c15f299796a708048f54ff11cbef1fe651241.png"></a>
+                </td>
+            </tr>
+            <tr>
+                <td>
+                    <p style="font-size:14px;margin-bottom:0;margin-top:0">
+              <span style="font-size:17px">
+                <a href="https://pullmanbus.cl" style="color:#464647;text-decoration:none;font-weight:bold" target="_blank">pullmanbus.cl®</a>
+              </span> Todos los derechos reservados.
+                    </p>
+                    <p style="font-size:14px;margin-top:0">Si no quieres recibir más comunicaciones nuestras, haz clic en: <a href="{{unsubscribe}}" style="color:#013ba7;text-decoration:underline;">Unsubscribe</a></p>
+                </td>
+            </tr>
+            </tbody>
+        </table>
+        <div>
+            <img alt="line" width="100%" src="https://cdn-assets.preprod-pullmanbus.kupos.cl/assets/pullman/blue_line-ad3e8fdf8a63f652b76cfbd91c8883aab390ae495a1558d5bee0b6a4e690b9fd.png">
+        </div>
+    </div>
+</div>
