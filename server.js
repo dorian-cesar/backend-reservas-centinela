@@ -4,7 +4,7 @@ import cors from "cors";
 import connectDB from "./config/db.js";
 import startExtendServicesCron from "./crons/extendServicesCron.js";
 import startSeatReleaseCron from "./crons/seatReleaseCron.js";
-
+import setupSwagger from './swagger.js';
 import authRoutes from "./routes/authRoutes.js";
 import userRoutes from "./routes/userRoutes.js";
 import serviceRoutes from "./routes/serviceRoutes.js";
@@ -17,6 +17,7 @@ import mailRoutes from "./routes/mailroutes.js"
 dotenv.config();
 
 const app = express();
+setupSwagger(app);
 app.use(cors());
 app.use(express.json());
 
