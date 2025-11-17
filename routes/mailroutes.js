@@ -1,8 +1,8 @@
 import express from "express";
-import { sendEmail } from "../controllers/mailController.js";
+import { sendReservationEmail } from "../controllers/mailController.js";
 
 const router = express.Router();
 
-router.post("/send", sendEmail);
+router.post("/send", sendReservationEmail);
 
 export default router;

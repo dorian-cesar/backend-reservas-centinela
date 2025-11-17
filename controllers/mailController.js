@@ -1,39 +1,44 @@
-export const sendEmail = async (req, res) => {
+import sgMail from "@sendgrid/mail";
+import dotenv from "dotenv";
+dotenv.config();
+sgMail.setApiKey(process.env.SENDGRID_API_KEY);
+
+export const sendReservationEmail = async (req, res) => {
+    const {
+        to,
+        reservation_number,
+        origin,
+        destination,
+        bus_company,
+        travel_date,
+        departure_time,
+        ticket_url,
+    } = req.body;
+
+    if (!to) {
+        return res.status(400).json({ message: "El campo 'to' es obligatorio" });
+    }
+
+    const msg = {
+        to,
+        from: "viajes@pullmanbus.cl", // Cambia por tu email verificado en SendGrid
+        templateId: "d-7be85246160348a490780c74d686991a",
+        dynamicTemplateData: {
+            reservation_number,
+            origin,
+            destination,
+            bus_company,
+            travel_date,
+            departure_time,
+            ticket_url,
+        },
+    };
+
     try {
-        const { email, datos } = req.body;
-
-        console.log("Email:", email);
-        console.log("Datos:", JSON.stringify(datos, null, 2));
-
-        // Respuesta simple con los datos recibidos
-        const respuesta = {
-            success: true,
-            message: "Datos recibidos correctamente",
-            timestamp: new Date().toISOString(),
-            datosRecibidos: {
-                email,
-                datos
-            }
-        };
-
-        console.log("Respuesta:");
-        console.log(JSON.stringify(respuesta, null, 2));
-
-        res.json(respuesta);
-
+        await sgMail.send(msg);
+        res.json({ message: "Correo enviado correctamente" });
     } catch (error) {
-        console.error("Error en sendEmail:", error);
-
-        const errorResponse = {
-            success: false,
-            message: "Error procesando la solicitud",
-            error: error.message,
-            timestamp: new Date().toISOString()
-        };
-
-        console.log("Respuesta de error:");
-        console.log(JSON.stringify(errorResponse, null, 2));
-
-        res.status(500).json(errorResponse);
+        console.error("Error enviando correo:", error);
+        res.status(500).json({ message: "Error enviando correo", error: error.message });
     }
 };
