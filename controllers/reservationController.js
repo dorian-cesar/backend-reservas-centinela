@@ -163,16 +163,16 @@ export const releaseSeatWithTimeValidation = async (req, res) => {
     const serviceDateTime = new Date(service.date);
 
     // Calcular diferencia en horas
-    const timeDiffHours = (serviceDateTime - now) / (1000 * 60 * 60);
+    // const timeDiffHours = (serviceDateTime - now) / (1000 * 60 * 60);
 
-    if (timeDiffHours <= 48) {
-      return res.status(400).json({
-        message:
-          "No se puede liberar el asiento. Faltan menos de 48 horas para el servicio",
-        timeRemaining: `${timeDiffHours.toFixed(1)} horas`,
-        cutoffTime: "48 horas antes del servicio",
-      });
-    }
+    // if (timeDiffHours <= 48) {
+    //   return res.status(400).json({
+    //     message:
+    //       "No se puede liberar el asiento. Faltan menos de 48 horas para el servicio",
+    //     timeRemaining: `${timeDiffHours.toFixed(1)} horas`,
+    //     cutoffTime: "48 horas antes del servicio",
+    //   });
+    // }
 
     // Buscar el asiento en el servicio
     const cleanInput = seatNumber.trim().toUpperCase();
