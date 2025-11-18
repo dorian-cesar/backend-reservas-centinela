@@ -207,8 +207,10 @@ export const confirmReservation = async (req, res) => {
     reservation.authorizationCode = authorizationCode;
     await reservation.save();
 
-    // Poblar para enviar correo
-    const populatedReservation = await Reservation.findById(reservation._id).populate("user").populate("service");
+    // Poblar ESPECIFICANDO LOS CAMPOS NECESARIOS
+    const populatedReservation = await Reservation.findById(reservation._id)
+      .populate("user", "name email") // Solo trae name y email del usuario
+      .populate("service");
 
     // Envío de correo asincrónico (no bloquea la respuesta)
     sendReservationEmailNotification(populatedReservation)

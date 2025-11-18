@@ -12,6 +12,7 @@ import reservationRoutes from "./routes/reservationRoutes.js";
 import busLayoutRoutes from "./routes/busLayoutRoutes.js";
 import cityRoutes from "./routes/cityRoutes.js";
 import mailRoutes from "./routes/mailroutes.js"
+import pdfRoutes from "./routes/pdfRoutes.js"
 
 
 dotenv.config();
@@ -29,6 +30,8 @@ app.use("/api/reservations", reservationRoutes);
 app.use("/api/layouts", busLayoutRoutes);
 app.use("/api/cities", cityRoutes);
 app.use("/api/mail", mailRoutes);
+app.use("/api/pdf", pdfRoutes);
+
 
 app.get('/api/test', (req, res) => {
     res.json({

@@ -1,55 +1,4 @@
-import sgMail from "@sendgrid/mail";
-import dotenv from "dotenv";
-dotenv.config();
-
-// CONFIGURACIÓN DE SENDGRID - Esto debe estar ANTES de cualquier uso de sgMail
-sgMail.setApiKey(process.env.SENDGRID_API_KEY);
-
-export const sendReservationEmailNotification = async (reservationPopulated) => {
-    if (!reservationPopulated) throw new Error("Reservation is required");
-
-    // Validar que el usuario esté poblado y tenga los datos necesarios
-    if (!reservationPopulated.user) {
-        throw new Error("User data missing on reservation");
-    }
-
-    const to = reservationPopulated.user.email;
-    if (!to) throw new Error("User email missing on reservation");
-
-    const userName = reservationPopulated.user.name || "Cliente";
-    const service = reservationPopulated.service || {};
-
-    // Obtener los datos del servicio o de la reserva
-    const origin = service.origin || reservationPopulated.origin || "No especificado";
-    const destination = service.destination || reservationPopulated.destination || "No especificado";
-    const date = service.date || reservationPopulated.date || "No especificado";
-
-    let travelDate = "No especificado";
-    let departureTime = "No especificado"
-
-    if (date instanceof Date || (typeof date === 'string' && date !== "No especificado")) {
-        const dateObj = new Date(date);
-        if (!isNaN(dateObj.getTime())) {
-            // Formatear fecha: DD/MM/YYYY
-            travelDate = dateObj.toLocaleDateString('es-CL', {
-                day: '2-digit',
-                month: '2-digit',
-                year: 'numeric'
-            });
-
-            // Formatear hora: HH:MM
-            departureTime = dateObj.toLocaleTimeString('es-CL', {
-                hour: '2-digit',
-                minute: '2-digit',
-                hour12: false
-            });
-        }
-    }
-
-    const downloadUrl = `https://reserva-centinela.dev-wit.com/api/pdf/reservation/${reservationPopulated._id}/pdf`;
-
-    const html = `
-    <!doctype html>
+<!doctype html>
 <html lang="es">
 
 <head>
@@ -131,7 +80,7 @@ export const sendReservationEmailNotification = async (reservationPopulated) => 
                         <td style="text-align:center;">
                           <span class="badge"
                             style="display:inline-block; background:#1e40af; color:#fff; padding:10px 18px; border-radius:30px; font-weight:700; font-size:13px;">
-                            Nº DE CONFIRMACIÓN: ${reservationPopulated._id}
+                            Nº DE RESERVA: ${reservationPopulated._id}
                           </span>
                         </td>
                       </tr>
@@ -206,7 +155,7 @@ export const sendReservationEmailNotification = async (reservationPopulated) => 
                                 Fecha de viaje</td>
                             </tr>
                             <tr>
-                              <td style="font-size:14px; color:#333; font-weight:600;">${travelDate}</td>
+                              <td style="font-size:14px; color:#333; font-weight:600;">${formattedDate}</td>
                             </tr>
                           </table>
                         </td>
@@ -227,14 +176,14 @@ export const sendReservationEmailNotification = async (reservationPopulated) => 
 
                     <!-- Download button -->
                     <table width="100%" cellpadding="0" cellspacing="0" role="presentation" style="margin-top:22px;">
-                    <tr>
+                      <tr>
                         <td align="center">
-                        <a href="${downloadUrl}" target="_blank"
+                          <a href="{{ticket_url}}" target="_blank"
                             style="display:inline-block; text-decoration:none; padding:12px 22px; background:#1e40af; color:#ffffff; border-radius:26px; font-weight:700; font-size:14px;">
-                            DESCARGAR PASAJE (PDF)
-                        </a>
+                            DESCARGA TU PASAJE
+                          </a>
                         </td>
-                    </tr>
+                      </tr>
                     </table>
 
                   </td>
@@ -272,14 +221,3 @@ export const sendReservationEmailNotification = async (reservationPopulated) => 
 </body>
 
 </html>
-    `;
-
-    const msg = {
-        to: to,
-        from: "viajes@pullmanbus.cl",
-        subject: "Confirmación de pasaje - Tandem Industrial",
-        html
-    };
-
-    return sgMail.send(msg);
-};
