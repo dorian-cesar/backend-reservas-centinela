@@ -30,6 +30,14 @@ app.use("/api/layouts", busLayoutRoutes);
 app.use("/api/cities", cityRoutes);
 app.use("/api/mail", mailRoutes);
 
+app.get('/api/test', (req, res) => {
+    res.json({
+        status: 'OK',
+        message: 'Backend funcionando',
+        timestamp: new Date().toISOString()
+    });
+});
+
 const PORT = process.env.PORT || 4000;
 
 connectDB()

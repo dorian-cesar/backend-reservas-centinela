@@ -20,8 +20,37 @@ import User from "../models/User.js";
  *                 $ref: '#/components/schemas/User'
  */
 export const getUsers = async (req, res) => {
-  const users = await User.find();
-  res.json(users);
+  try {
+    // parsea query params (page y limit). Por defecto page=1, limit=10
+    const page = Math.max(1, parseInt(req.query.page, 10) || 1);
+    const limit = Math.max(1, parseInt(req.query.limit, 10) || 10);
+    const skip = (page - 1) * limit;
+
+    const [users, total] = await Promise.all([
+      User.find()
+        .select("-password")
+        .skip(skip)
+        .limit(limit)
+        .lean(),               // lean() para mejor rendimiento si no necesitas documentos mongoose
+      User.countDocuments()
+    ]);
+
+    const totalPages = Math.ceil(total / limit);
+
+    res.json({
+      success: true,
+      data: users,
+      pagination: {
+        total,
+        totalPages,
+        page,
+        limit
+      }
+    });
+  } catch (err) {
+    console.error("getUsers error:", err);
+    res.status(500).json({ success: false, message: "Error del servidor" });
+  }
 };
 
 /**
