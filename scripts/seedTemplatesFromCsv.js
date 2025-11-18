@@ -7,7 +7,7 @@ import ServiceTemplate from "../models/ServiceTemplate.js";
 import BusLayout from "../models/BusLayout.js";
 
 dotenv.config();
-
+console.log("mongo uri: " + process.env.MONGO_URI)
 const __dirname = path.resolve();
 
 // Configuración de mapeo de días
