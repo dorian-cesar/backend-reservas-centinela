@@ -21,21 +21,42 @@ import User from "../models/User.js";
  */
 export const getUsers = async (req, res) => {
   try {
-    // parsea query params (page y limit). Por defecto page=1, limit=10
     const page = Math.max(1, parseInt(req.query.page, 10) || 1);
     const limit = Math.max(1, parseInt(req.query.limit, 10) || 10);
     const skip = (page - 1) * limit;
 
+    // filtros
+    const { q, role } = req.query;
+    const query = {};
+
+    if (q && q.trim() !== "") {
+      // búsqueda por nombre, email o rut (case-insensitive, partial)
+      const regex = new RegExp(q.trim().replace(/[.*+?^${}()|[\]\\]/g, "\\$&"), "i");
+      query.$or = [{ name: regex }, { email: regex }, { rut: regex }];
+    }
+
+    if (role && role.trim() !== "") {
+      query.role = role.trim();
+    }
+
+    // sorting
+    const allowedSortFields = ["createdAt", "name", "email", "_id"];
+    const sortBy = allowedSortFields.includes(req.query.sortBy) ? req.query.sortBy : "_id";
+    const order = (req.query.order || "asc").toLowerCase() === "desc" ? -1 : 1;
+    const sortObj = { [sortBy]: order };
+
+    // consulta paginada con exclusión del password
     const [users, total] = await Promise.all([
-      User.find()
+      User.find(query)
         .select("-password")
+        .sort(sortObj)
         .skip(skip)
         .limit(limit)
-        .lean(),               // lean() para mejor rendimiento si no necesitas documentos mongoose
-      User.countDocuments()
+        .lean(),
+      User.countDocuments(query)
     ]);
 
-    const totalPages = Math.ceil(total / limit);
+    const totalPages = Math.max(1, Math.ceil(total / limit));
 
     res.json({
       success: true,
@@ -49,6 +70,52 @@ export const getUsers = async (req, res) => {
     });
   } catch (err) {
     console.error("getUsers error:", err);
+    res.status(500).json({ success: false, message: "Error del servidor" });
+  }
+};
+
+export const updateUser = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { name, email, role, rut, password } = req.body;
+
+    // validar existencia
+    const user = await User.findById(id);
+    if (!user) return res.status(404).json({ success: false, message: "Usuario no encontrado" });
+
+    // si viene email y es distinto, comprobar colisión
+    if (email && email !== user.email) {
+      const exists = await User.findOne({ email });
+      if (exists) {
+        return res.status(400).json({ success: false, message: "El correo ya está en uso por otro usuario" });
+      }
+    }
+
+    // construir update object
+    const update = {};
+    if (name !== undefined) update.name = name;
+    if (email !== undefined) update.email = email;
+    if (role !== undefined) update.role = role;
+    if (rut !== undefined) update.rut = rut;
+
+    // si viene password, hashearlo (pre('save') no corre en findByIdAndUpdate)
+    if (password) {
+      const hashed = await bcrypt.hash(password, 10);
+      update.password = hashed;
+    }
+
+    // actualizar y devolver sin password
+    const updated = await User.findByIdAndUpdate(id, update, { new: true, runValidators: true })
+      .select("-password")
+      .lean();
+
+    res.json({ success: true, data: updated });
+  } catch (err) {
+    console.error("updateUser error:", err);
+    // manejo básico de errores: si mongoose tira ValidationError
+    if (err.name === "ValidationError") {
+      return res.status(400).json({ success: false, message: err.message });
+    }
     res.status(500).json({ success: false, message: "Error del servidor" });
   }
 };

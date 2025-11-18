@@ -42,11 +42,13 @@ const PORT = process.env.PORT || 4000;
 
 connectDB()
     .then(() => {
-        startExtendServicesCron();
-        startSeatReleaseCron();
+
+        if (process.env.NODE_ENV !== 'development') {
+            startExtendServicesCron();
+            startSeatReleaseCron();
+        }
         app.listen(PORT, () => console.log(`🚍 Servidor corriendo en puerto ${PORT}`));
     })
     .catch((err) => {
         console.error("Error al iniciar el servidor:", err);
     });
-//comentario de prueba//

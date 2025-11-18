@@ -24,7 +24,7 @@ const DAYS_MAP = {
 async function processCsv() {
   try {
     await mongoose.connect(process.env.MONGO_URI);
-    console.log("✅ Conectado a MongoDB");
+    console.log("✅ Conectado a MongoDB, uri: " + process.env.MONGO_URI);
 
     // 1. Obtener o crear layout de bus
     let layout = await BusLayout.findOne();

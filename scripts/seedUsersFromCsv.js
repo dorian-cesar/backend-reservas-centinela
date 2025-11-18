@@ -19,7 +19,7 @@ await mongoose.connect(process.env.MONGO_URI, {
   useNewUrlParser: true,
   useUnifiedTopology: true,
 });
-console.log("✅ Conectado a MongoDB");
+console.log("✅ Conectado a MongoDB, uri: " + process.env.MONGO_URI);
 
 // Función para crear usuario
 const createUser = async (row) => {
