@@ -118,22 +118,37 @@ export const register = async (req, res) => {
  * @returns {Promise<void>} Retorna un token JWT y los datos del usuario si las credenciales son válidas, o un mensaje de error.
  */
 export const login = async (req, res) => {
-  const { email, password } = req.body;
-  //const user = await User.findOne({ email });
+  try {
+    const { email, password } = req.body;
 
-  const usershow = await User.findOne({ email }).select("_id name email role");
+    // Una sola consulta
+    const user = await User.findOne({ email }).select("+password");
+    
+    if (!user || !(await user.comparePassword(password))) {
+      return res.status(401).json({ message: "Credenciales inválidas" });
+    }
 
-  const user = await User.findOne({ email }).select("+password");
-  if (!user || !(await user.comparePassword(password)))
-    return res.status(401).json({ message: "Credenciales inválidas" });
-
-  const token = jwt.sign(
+    const token = jwt.sign(
       { id: user._id, role: user.role },
       process.env.JWT_SECRET,
-      {
-        expiresIn: "7d",
-      }
-  );
+      { expiresIn: "7d" }
+    );
 
-  res.json({ token, user: usershow });
+    // Eliminar password del objeto de respuesta
+    const userWithoutPassword = {
+      _id: user._id,
+      name: user.name,
+      email: user.email,
+      role: user.role
+    };
+
+    res.json({ 
+      token, 
+      user: userWithoutPassword 
+    });
+
+  } catch (error) {
+    console.error('Login error:', error);
+    res.status(500).json({ message: "Error interno del servidor" });
+  }
 };

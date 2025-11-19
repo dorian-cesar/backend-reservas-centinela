@@ -3,12 +3,12 @@ import { createTemplate, generateOne, generateServices, listTemplates, searchSer
 import { protect } from "../middleware/authMiddleware.js";
 const router = express.Router();
 
-router.post("/template", protect, createTemplate);
-router.post("/generate", protect, generateServices);
-router.post("/generateOne/:id", protect, generateOne);
-router.get("/search", searchServices);
-router.get("/listTemplates", listTemplates);
-router.get("/listServicesByNumber", getServicesByNumber);
+router.post("/template", protect('admin'), createTemplate);
+router.post("/generate", protect('admin'), generateServices);
+router.post("/generateOne/:id", protect('admin'), generateOne);
+router.get("/search", protect(), searchServices);
+router.get("/listTemplates", protect('admin'), listTemplates);
+router.get("/listServicesByNumber", protect('admin'), getServicesByNumber);
 
 
 export default router;

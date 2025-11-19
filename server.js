@@ -5,14 +5,8 @@ import connectDB from "./config/db.js";
 import startExtendServicesCron from "./crons/extendServicesCron.js";
 import startSeatReleaseCron from "./crons/seatReleaseCron.js";
 import setupSwagger from './swagger.js';
-import authRoutes from "./routes/authRoutes.js";
-import userRoutes from "./routes/userRoutes.js";
-import serviceRoutes from "./routes/serviceRoutes.js";
-import reservationRoutes from "./routes/reservationRoutes.js";
-import busLayoutRoutes from "./routes/busLayoutRoutes.js";
-import cityRoutes from "./routes/cityRoutes.js";
-import mailRoutes from "./routes/mailroutes.js"
-import pdfRoutes from "./routes/pdfRoutes.js"
+
+import indexRoutes from './routes/indexRoutes.js'
 
 
 dotenv.config();
@@ -22,16 +16,7 @@ setupSwagger(app);
 app.use(cors());
 app.use(express.json());
 
-// Rutas principales
-app.use("/api/auth", authRoutes);
-app.use("/api/users", userRoutes);
-app.use("/api/services", serviceRoutes);
-app.use("/api/reservations", reservationRoutes);
-app.use("/api/layouts", busLayoutRoutes);
-app.use("/api/cities", cityRoutes);
-app.use("/api/mail", mailRoutes);
-app.use("/api/pdf", pdfRoutes);
-
+app.use('/api', indexRoutes);
 
 app.get('/api/test', (req, res) => {
     res.json({
@@ -39,6 +24,10 @@ app.get('/api/test', (req, res) => {
         message: 'Backend funcionando',
         timestamp: new Date().toISOString()
     });
+});
+
+app.use((req, res) => {
+    res.status(404).json({ error: 'Ruta no encontrada' });
 });
 
 const PORT = process.env.PORT || 4000;
