@@ -12,7 +12,14 @@ export const downloadReservationPDF = async (req, res) => {
         // Buscar y poblar la reserva
         const reservation = await Reservation.findById(reservationId)
             .populate("user", "name email rut")
-            .populate("service", "origin destination date");
+            .populate({
+                path: "service",
+                select: "origin destination date template",
+                populate: {
+                    path: "template",
+                    select: "time"
+                }
+            });
 
         if (!reservation) {
             return res.status(404).json({ message: "Reserva no encontrada" });
