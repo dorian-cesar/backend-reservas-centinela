@@ -1,111 +1,292 @@
-import PDFDocument from 'pdfkit';
+import puppeteer from 'puppeteer';
 
-export const generateReservationPDF = (reservationPopulated) => {
-    return new Promise((resolve, reject) => {
-        try {
-            const doc = new PDFDocument({ margin: 50 });
-            const chunks = [];
+const formatDateOnly = (d) => {
+    if (!d) return 'No especificado';
+    const dt = new Date(d);
+    if (isNaN(dt.getTime())) return 'No especificado';
+    return dt.toISOString().split('T')[0]; // "YYYY-MM-DD"
+};
 
-            // Capturar el PDF en memoria
-            doc.on('data', (chunk) => chunks.push(chunk));
-            doc.on('end', () => {
-                const pdfBuffer = Buffer.concat(chunks);
-                const base64PDF = pdfBuffer.toString('base64');
-                resolve(base64PDF);
-            });
+const normalizeTimeString = (raw) => {
+    if (!raw) return null;
+    // Si ya viene "HH:MM" o "H:MM"
+    const m1 = raw.toString().trim().match(/^(\d{1,2}):(\d{2})$/);
+    if (m1) {
+        return `${m1[1].padStart(2, '0')}:${m1[2]}`;
+    }
 
-            // Contenido del PDF
-            doc.fontSize(20).font('Helvetica-Bold').text('TÁNDEM INDUSTRIAL', { align: 'center' });
-            doc.moveDown(0.5);
+    // Si viene Date ISO string, extraer hora (en UTC) y devolver HH:MM
+    const m2 = raw.toString().trim().match(/^(\d{4}-\d{2}-\d{2})T(\d{2}):(\d{2})/);
+    if (m2) {
+        return `${m2[2]}:${m2[3]}`;
+    }
 
-            doc.fontSize(16).font('Helvetica').text('PASAJE DE BUS', { align: 'center' });
-            doc.moveDown(1);
+    // fallback null
+    return null;
+};
 
-            // Línea separadora
-            doc.moveTo(50, doc.y).lineTo(550, doc.y).stroke();
-            doc.moveDown(1);
+export const generateReservationPDF = async (reservationPopulated) => {
+    const userName = reservationPopulated.user?.name || 'No especificado';
+    const origin = reservationPopulated.service?.origin || reservationPopulated.origin || 'No especificado';
+    const destination = reservationPopulated.service?.destination || reservationPopulated.destination || 'No especificado';
 
-            // Información del pasaje
-            doc.fontSize(12).font('Helvetica-Bold');
-            doc.text(`Nº de Confirmación: ${reservationPopulated._id}`);
-            doc.moveDown(0.5);
+    // Fecha como YYYY-MM-DD (cortada)
+    const travelDate = reservationPopulated.service?.date
+        ? formatDateOnly(reservationPopulated.service.date)
+        : (reservationPopulated.date ? formatDateOnly(reservationPopulated.date) : 'No especificado');
 
-            doc.text(`Pasajero: ${reservationPopulated.user?.name || 'No especificado'}`);
-            doc.moveDown(0.5);
+    // Hora: primero template.time (si existe), si no, intentar extraer de service.date
+    const rawTemplateTime = reservationPopulated.service?.template?.time || reservationPopulated.service?.time || reservationPopulated.time;
+    let departureTime = normalizeTimeString(rawTemplateTime);
 
-            doc.text(`RUT: ${reservationPopulated.user?.rut || 'No especificado'}`);
-            doc.moveDown(0.5);
+    if (!departureTime && reservationPopulated.service?.date) {
+        // Extraer HH:MM desde el ISO de service.date (no convertimos zona, solo tomamos la parte hora)
+        departureTime = normalizeTimeString(new Date(reservationPopulated.service.date).toISOString());
+    }
+    departureTime = departureTime || 'No especificado';
 
-            doc.text(`Email: ${reservationPopulated.user?.email || 'No especificado'}`);
-            doc.moveDown(1);
+    const reservationId = reservationPopulated._id;
+    const seatNumber = reservationPopulated.seatNumber || 'N/A';
+    const authorizationCode = reservationPopulated.authorizationCode || 'N/A';
 
-            // Información del viaje
-            const service = reservationPopulated.service || {};
-            const origin = service.origin || reservationPopulated.origin || "No especificado";
-            const destination = service.destination || reservationPopulated.destination || "No especificado";
-            const date = service.date || reservationPopulated.date;
-
-            let travelDate = "No especificado";
-            let departureTime = "No especificado";
-
-            if (date) {
-                const dateObj = new Date(date);
-                if (!isNaN(dateObj.getTime())) {
-                    travelDate = dateObj.toLocaleDateString('es-CL');
-                    departureTime = dateObj.toLocaleTimeString('es-CL', {
-                        hour: '2-digit',
-                        minute: '2-digit',
-                        hour12: false
-                    });
+    const html = `
+    <!DOCTYPE html>
+    <html lang="es">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>Confirmación de Pasaje - Tándem</title>
+        <style>
+            * { margin: 0; padding: 0; box-sizing: border-box; }
+            body { 
+                margin: 0; 
+                padding: 20px; 
+                background: #f5f5f5; 
+                font-family: Arial, Helvetica, sans-serif; 
+                color: #333; 
+                min-height: 100vh;
+            }
+            .container { 
+                width: 100%;
+                max-width: 600px; 
+                margin: 0 auto; 
+                background: #f5f5f5; 
+            }
+            .card { 
+                background: #fff; 
+                border-radius: 10px; 
+                padding: 26px; 
+                box-shadow: 0 2px 6px rgba(0,0,0,0.08);
+                margin-bottom: 20px;
+            }
+            .header { 
+                text-align: center; 
+                margin-bottom: 20px; 
+            }
+            .company-name { 
+                font-size: 28px; 
+                font-weight: 700; 
+                color: #1e3a8a; 
+                margin-bottom: 10px;
+            }
+            .title { 
+                font-size: 20px; 
+                margin: 0 0 6px; 
+                font-weight: 600; 
+                color: #333; 
+            }
+            .subtitle { 
+                margin: 0; 
+                font-size: 14px; 
+                color: #666; 
+            }
+            .badge { 
+                display: inline-block; 
+                background: #1e40af; 
+                color: #fff; 
+                padding: 10px 18px; 
+                border-radius: 30px; 
+                font-weight: 700; 
+                font-size: 13px; 
+                margin: 10px 0;
+            }
+            .info-section {
+                margin: 20px 0;
+            }
+            .info-grid {
+                width: 100%;
+                border-collapse: collapse;
+            }
+            .info-grid td {
+                padding: 8px 0;
+                vertical-align: top;
+            }
+            .info-label {
+                color: #666;
+                font-size: 11px;
+                font-weight: 700;
+                text-transform: uppercase;
+                padding-bottom: 4px;
+            }
+            .info-value {
+                font-size: 14px;
+                color: #333;
+                font-weight: 600;
+            }
+            .footer {
+                font-size: 10px;
+                text-align: center;
+                margin-top: 30px;
+                color: #666;
+                padding-top: 20px;
+                border-top: 1px solid #eee;
+            }
+            @media print {
+                body { 
+                    background: white !important;
+                    padding: 0;
+                }
+                .container { 
+                    box-shadow: none; 
+                    margin: 0;
+                }
+                .card {
+                    box-shadow: none;
+                    border: 1px solid #ddd;
                 }
             }
+        </style>
+    </head>
+    <body>
+        <div class="container">
+            <div class="header">
+                <div class="company-name">Tándem</div>
+                <h1 class="title">¡Todo listo, ${userName}!</h1>
+                <p class="subtitle">Tu pasaje fue confirmado con éxito.</p>
+            </div>
 
-            doc.text(`Origen: ${origin}`);
-            doc.moveDown(0.5);
+            <div class="card">
+                <div class="info-section">
+                    <div style="text-align: center;">
+                        <div style="font-size: 14px; color: #333; font-weight: 600; margin-bottom: 10px;">
+                            Detalle de tu compra
+                        </div>
+                        <div class="badge">Nº DE CONFIRMACIÓN: ${reservationId}</div>
+                    </div>
+                </div>
 
-            doc.text(`Destino: ${destination}`);
-            doc.moveDown(0.5);
+                <div class="info-section">
+                    <table class="info-grid">
+                        <tr>
+                            <td style="width: 50%;">
+                                <div class="info-label">Origen</div>
+                                <div class="info-value">${origin}</div>
+                            </td>
+                            <td style="width: 50%;">
+                                <div class="info-label">Destino</div>
+                                <div class="info-value">${destination}</div>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>
+                                <div class="info-label">Nº de reserva</div>
+                                <div class="info-value">${reservationId}</div>
+                            </td>
+                            <td>
+                                <div class="info-label">Empresa</div>
+                                <div class="info-value">Tandem Industrial</div>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>
+                                <div class="info-label">Fecha de viaje</div>
+                                <div class="info-value">${travelDate}</div>
+                            </td>
+                            <td>
+                                <div class="info-label">Horario salida</div>
+                                <div class="info-value">${departureTime}</div>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>
+                                <div class="info-label">Asiento</div>
+                                <div class="info-value">${seatNumber}</div>
+                            </td>
+                            <td>
+                                <div class="info-label">Código autorización</div>
+                                <div class="info-value">${authorizationCode}</div>
+                            </td>
+                        </tr>
+                    </table>
+                </div>
 
-            doc.text(`Fecha de viaje: ${travelDate}`);
-            doc.moveDown(0.5);
+                <div class="footer">
+                    Tándem Industrial • Tel: +56 2 3304 5632 • Email: clientes@pullmanbus.cl<br>
+                    tandemindustrial.cl · Todos los derechos reservados.
+                </div>
+            </div>
+        </div>
+    </body>
+    </html>
+    `;
 
-            doc.text(`Hora de salida: ${departureTime}`);
-            doc.moveDown(0.5);
+    let browser;
+    try {
+        // Configuración más robusta de Puppeteer
+        browser = await puppeteer.launch({
+            headless: 'new',
+            args: [
+                '--no-sandbox',
+                '--disable-setuid-sandbox',
+                '--disable-dev-shm-usage',
+                '--disable-accelerated-2d-canvas',
+                '--no-first-run',
+                '--no-zygote',
+                '--disable-gpu'
+            ]
+        });
 
-            doc.text(`Asiento: ${reservationPopulated.seatNumber}`);
-            doc.moveDown(1);
+        const page = await browser.newPage();
 
-            // Código de autorización
-            doc.fontSize(14).text(`Código de Autorización: ${reservationPopulated.authorizationCode || 'N/A'}`, { align: 'center' });
-            doc.moveDown(1);
+        // Configurar viewport
+        await page.setViewport({ width: 1200, height: 800 });
 
-            // Línea separadora
-            doc.moveTo(50, doc.y).lineTo(550, doc.y).stroke();
-            doc.moveDown(1);
+        // Establecer contenido con timeout más largo
+        await page.setContent(html, {
+            waitUntil: ['networkidle0', 'domcontentloaded'],
+            timeout: 30000
+        });
 
-            // Instrucciones
-            doc.fontSize(10).font('Helvetica');
-            doc.text('INSTRUCCIONES:', { underline: true });
-            doc.moveDown(0.3);
-            doc.text('• Presente este pasaje impreso o en formato digital al conductor.');
-            doc.moveDown(0.3);
-            doc.text('• Llegue al menos 30 minutos antes de la hora de salida.');
-            doc.moveDown(0.3);
-            doc.text('• El pasaje es válido solo para la fecha y hora indicadas.');
-            doc.moveDown(0.3);
-            doc.text('• No se permiten cambios de fecha ni datos del pasaje.');
-            doc.moveDown(0.3);
-            doc.text('• Puede anular su pasaje hasta 4 horas antes de la salida.');
-            doc.moveDown(1);
+        // Esperar a que los elementos críticos estén renderizados
+        await page.waitForSelector('.container', { timeout: 10000 });
 
-            // Pie de página
-            doc.fontSize(8).text('Tándem Industrial • Tel: +56 2 3304 5632 • Email: clientes@pullmanbus.cl', { align: 'center' });
-            doc.text('www.tandemindustrial.cl', { align: 'center' });
+        // Generar PDF con configuración mejorada
+        const pdfBuffer = await page.pdf({
+            format: 'A4',
+            printBackground: true,
+            margin: {
+                top: '20mm',
+                right: '15mm',
+                bottom: '20mm',
+                left: '15mm'
+            },
+            displayHeaderFooter: false,
+            preferCSSPageSize: true
+        });
 
-            doc.end();
-
-        } catch (error) {
-            reject(error);
+        // Verificar que el PDF tenga contenido
+        if (!pdfBuffer || pdfBuffer.length < 100) {
+            throw new Error('PDF generado está vacío o es muy pequeño');
         }
-    });
+
+        return pdfBuffer;
+
+    } catch (error) {
+        console.error('Error en generateReservationPDF:', error);
+        throw error;
+    } finally {
+        if (browser) {
+            await browser.close();
+        }
+    }
 };
