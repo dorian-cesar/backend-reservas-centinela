@@ -1,6 +1,6 @@
 import GeneratedService from "../models/GeneratedService.js";
 import Reservation from "../models/Reservation.js";
-import { sendReservationEmailNotification } from "../services/mailService.js";
+import { sendReservationEmailNotification, sendSeatReleasedEmailNotification } from "../services/mailService.js";
 
 /**
  * @swagger
@@ -382,6 +382,19 @@ export const releaseSeatWithTimeValidation = async (req, res) => {
       return res.status(404).json({ message: "Servicio no encontrado" });
     }
 
+    // Validar que el servicio sea futuro y tenga más de 48 horas
+    // const now = new Date();
+    // const serviceDateTime = new Date(service.date);
+    // const timeDiffHours = (serviceDateTime - now) / (1000 * 60 * 60);
+
+    // if (timeDiffHours <= 48) {
+    //   return res.status(400).json({ 
+    //     message: "No se puede liberar el asiento. Faltan menos de 48 horas para el servicio",
+    //     timeRemaining: `${timeDiffHours.toFixed(1)} horas`,
+    //     cutoffTime: "48 horas antes del servicio"
+    //   });
+    // }
+
     // Buscar el asiento en el servicio
     const cleanInput = seatNumber.trim().toUpperCase();
     const seat = service.seats.find(
@@ -444,6 +457,28 @@ export const releaseSeatWithTimeValidation = async (req, res) => {
     reservation.releasedAt = new Date();
     await reservation.save();
 
+    // 🔥 ENVÍO DE CORREO DE LIBERACIÓN (ASINCRÓNICO)
+    try {
+      // Poblar la reserva para el correo
+      const populatedReservation = await Reservation.findById(reservation._id)
+        .populate("user", "name email")
+        .populate("service");
+
+      // Enviar correo en paralelo
+      sendSeatReleasedEmailNotification(populatedReservation, {
+        origin: service.origin,
+        destination: service.destination,
+        date: service.date,
+        time: service.time
+      })
+        .then(() => console.log(`✅ Correo de liberación enviado para reserva ${reservation._id}`))
+        .catch((err) => console.error(`❌ Error enviando correo de liberación para reserva ${reservation._id}:`, err));
+
+    } catch (emailError) {
+      console.error(`❌ Error preparando envío de correo de liberación:`, emailError);
+      // No afecta la respuesta principal
+    }
+
     res.json({
       message: "Asiento liberado exitosamente",
       reservation: {
@@ -458,6 +493,7 @@ export const releaseSeatWithTimeValidation = async (req, res) => {
         origin: service.origin,
         destination: service.destination,
       },
+      emailStatus: "Notificación de liberación enviada por correo"
     });
   } catch (error) {
     console.error("Error liberando asiento:", error);
@@ -834,57 +870,75 @@ export const getUserConfirmedReservations = async (req, res) => {
   try {
     const { userId } = req.params;
 
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+
     // Buscar servicios que tienen asientos confirmados por este usuario
     const services = await GeneratedService.find({
       "seats.confirmed": true,
-      "seats.confirmedBy": userId
+      "seats.confirmedBy": userId,
+      date: { $gte: today }
     })
       .populate("template")
       .populate("busLayout")
       .sort({ date: 1 });
 
     // Filtrar y estructurar los servicios con solo los asientos confirmados del usuario
-    const userConfirmedServices = services.map(service => {
-      const now = new Date();
-      const serviceDateTime = new Date(service.date);
-      const timeDiffHours = (serviceDateTime - now) / (1000 * 60 * 60);
+    const userConfirmedServices = await Promise.all(
+      services.map(async service => {
+        const now = new Date();
+        const serviceDateTime = new Date(service.date);
+        const timeDiffHours = (serviceDateTime - now) / (1000 * 60 * 60);
 
-      // Filtrar solo los asientos confirmados por este usuario
-      const userConfirmedSeats = service.seats.filter(seat =>
-        seat.confirmed && seat.reservedBy?.toString() === userId
-      );
+        // Filtrar asientos de este usuario
+        const userConfirmedSeats = service.seats.filter(seat =>
+          seat.confirmed && seat.reservedBy?.toString() === userId
+        );
 
-      // Si no hay asientos confirmados (por seguridad), saltar este servicio
-      if (userConfirmedSeats.length === 0) {
-        return null;
-      }
+        if (userConfirmedSeats.length === 0) return null;
 
-      return {
-        _id: service._id,
-        serviceNumber: service.serviceNumber,
-        serviceName: service.serviceName,
-        template: service.template,
-        date: service.date,
-        origin: service.origin,
-        destination: service.destination,
-        busLayout: service.busLayout,
-        seats: userConfirmedSeats, // Solo los asientos confirmados del usuario
-        time: service.time,
-        // Información específica del usuario
-        userConfirmedSeats: userConfirmedSeats.map(seat => ({
-          seatNumber: seat.seatNumber,
-          // confirmedAt: seat.reservationExpiresAt, // Podrías agregar un campo confirmedAt si lo necesitas
-        })),
-        canBeReleased: timeDiffHours > 48,
-        timeRemaining: `${Math.max(0, timeDiffHours).toFixed(1)} horas`,
-        hoursRemaining: timeDiffHours,
-        // Metadata
-        totalUserSeats: userConfirmedSeats.length,
-        releaseDeadline: new Date(serviceDateTime.getTime() - (48 * 60 * 60 * 1000))
-      };
-    }).filter(service => service !== null); // Remover servicios nulos
+        const seatsWithReservation = await Promise.all(
+          userConfirmedSeats.map(async seat => {
+            const reservation = await Reservation.findOne({
+              user: userId,
+              service: service._id,
+              seatNumber: seat.seatNumber,
+              status: "confirmed"
+            }).select("_id status createdAt");
 
-    res.json(userConfirmedServices);
+            return {
+              seatNumber: seat.seatNumber,
+              reservationId: reservation?._id || null,
+              reservationStatus: reservation?.status || null,
+              reservationCreatedAt: reservation?.createdAt || null
+            };
+          })
+        );
+
+        return {
+          _id: service._id,
+          serviceNumber: service.serviceNumber,
+          serviceName: service.serviceName,
+          template: service.template,
+          date: service.date,
+          origin: service.origin,
+          destination: service.destination,
+          busLayout: service.busLayout,
+          seats: userConfirmedSeats,
+          time: service.time,
+
+          userConfirmedSeats: seatsWithReservation,
+
+          canBeReleased: timeDiffHours > 48,
+          timeRemaining: `${Math.max(0, timeDiffHours).toFixed(1)} horas`,
+          hoursRemaining: timeDiffHours,
+          totalUserSeats: userConfirmedSeats.length,
+          releaseDeadline: new Date(serviceDateTime.getTime() - (48 * 60 * 60 * 1000))
+        };
+      })
+    );
+
+    return res.json(userConfirmedServices.filter(Boolean));
 
   } catch (error) {
     console.error("Error obteniendo reservas confirmadas:", error);
