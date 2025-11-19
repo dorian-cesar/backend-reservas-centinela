@@ -22,26 +22,17 @@ export const sendReservationEmailNotification = async (reservationPopulated) => 
   // Obtener los datos del servicio o de la reserva
   const origin = service.origin || reservationPopulated.origin || "No especificado";
   const destination = service.destination || reservationPopulated.destination || "No especificado";
-  const date = service.date || reservationPopulated.date || "No especificado";
 
-  let travelDate = "No especificado";
-  let departureTime = "No especificado"
+  const date = service.date || reservationPopulated.date || "No especificado";
+  const time = service.time || reservationPopulated.time || "No especificado";
 
   if (date instanceof Date || (typeof date === 'string' && date !== "No especificado")) {
     const dateObj = new Date(date);
     if (!isNaN(dateObj.getTime())) {
-      // Formatear fecha: DD/MM/YYYY
       travelDate = dateObj.toLocaleDateString('es-CL', {
         day: '2-digit',
         month: '2-digit',
         year: 'numeric'
-      });
-
-      // Formatear hora: HH:MM
-      departureTime = dateObj.toLocaleTimeString('es-CL', {
-        hour: '2-digit',
-        minute: '2-digit',
-        hour12: false
       });
     }
   }
@@ -206,7 +197,7 @@ export const sendReservationEmailNotification = async (reservationPopulated) => 
                                 Fecha de viaje</td>
                             </tr>
                             <tr>
-                              <td style="font-size:14px; color:#333; font-weight:600;">${travelDate}</td>
+                              <td style="font-size:14px; color:#333; font-weight:600;">${date}</td>
                             </tr>
                           </table>
                         </td>
@@ -218,7 +209,7 @@ export const sendReservationEmailNotification = async (reservationPopulated) => 
                                 Horario salida</td>
                             </tr>
                             <tr>
-                              <td style="font-size:14px; color:#333; font-weight:600;">${departureTime}</td>
+                              <td style="font-size:14px; color:#333; font-weight:600;">${time}</td>
                             </tr>
                           </table>
                         </td>
