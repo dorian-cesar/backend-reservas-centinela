@@ -40,12 +40,13 @@ const createUser = async (row) => {
       return;
     }
 
-    const password = await bcrypt.hash(plainPassword, 10);
+    // const password = await bcrypt.hash(plainPassword, 10);
 
     const newUser = new User({
       name,
       email,
-      password,
+
+      password: plainPassword,
       rut,
       role: "user", // o "admin" si corresponde
     });
