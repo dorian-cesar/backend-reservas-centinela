@@ -2,7 +2,7 @@ import cron from 'node-cron';
 import { extendAllTemplatesByOneDay } from '../services/serviceGenerator.js';
 
 export default function startExtendServicesCron() {
-    cron.schedule('32 11 * * *', async () => {
+    cron.schedule('0 1 * * *', async () => {
         try {
             const result = await extendAllTemplatesByOneDay();
 
