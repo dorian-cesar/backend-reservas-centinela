@@ -1,10 +1,12 @@
+import "dotenv/config"; // 👈 NECESARIO
 import mongoose from "mongoose";
 import ServiceTemplate from "../models/ServiceTemplate.js";
 
 const run = async () => {
+  console.log("MONGO_URI:", process.env.MONGO_URI); // debug
+
   await mongoose.connect(process.env.MONGO_URI);
 
-  // Obtener todos los servicios existentes ordenados por fecha de creación
   const services = await ServiceTemplate.find().sort({ _id: 1 });
 
   let counter = 1;
