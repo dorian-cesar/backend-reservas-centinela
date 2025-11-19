@@ -16,6 +16,24 @@ const generatedServiceSchema = new mongoose.Schema({
   destination: String,
   busLayout: { type: mongoose.Schema.Types.ObjectId, ref: "BusLayout" },
   seats: { type: [seatDefinition], default: [] },
+  serviceName: {
+    type: String,
+    required: true,
+    index: true
+  },
+  serviceNumber: {
+    type: Number,
+    required: true,
+    index: true
+  }
+});
+
+// Middleware para asegurar que serviceName y serviceNumber estén presentes
+generatedServiceSchema.pre('save', function (next) {
+  if (!this.serviceName && this.origin && this.destination && this.time) {
+    this.serviceName = `${this.origin} → ${this.destination} ${this.time}`;
+  }
+  next();
 });
 
 export default mongoose.model("GeneratedService", generatedServiceSchema);

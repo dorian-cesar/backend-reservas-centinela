@@ -51,6 +51,11 @@ export const generateForTemplate = async (templateId, windowDays = 14) => {
   const t = await ServiceTemplate.findById(templateId);
   if (!t) throw new Error("Template no encontrada");
 
+  // 🔥 VALIDAR que el template tenga serviceNumber y serviceName
+  if (!t.serviceNumber || !t.serviceName) {
+    throw new Error(`Template ${t._id} no tiene serviceNumber o serviceName configurado`);
+  }
+
   const layout = await BusLayout.findById(t.layout);
   if (!layout) throw new Error("Layout no encontrado");
 
@@ -78,6 +83,7 @@ export const generateForTemplate = async (templateId, windowDays = 14) => {
 
     const seats = buildSeatsFromLayout(layout);
 
+    // 🔥 AGREGAR serviceName y serviceNumber
     const newService = await GeneratedService.create({
       template: t._id,
       date: currentDate,
@@ -85,6 +91,8 @@ export const generateForTemplate = async (templateId, windowDays = 14) => {
       origin: t.origin,
       destination: t.destination,
       busLayout: layout._id,
+      serviceName: t.serviceName,
+      serviceNumber: t.serviceNumber,
       seats,
     });
 
@@ -103,6 +111,12 @@ export const generateForTemplate = async (templateId, windowDays = 14) => {
 export const extendTemplateByOneDay = async (templateId) => {
   const t = await ServiceTemplate.findById(templateId);
   if (!t) throw new Error("Template no encontrada");
+
+  // 🔥 VALIDAR que el template tenga serviceNumber y serviceName
+  if (!t.serviceNumber || !t.serviceName) {
+    console.warn(`⚠️  Template ${t._id} no tiene serviceNumber o serviceName, saltando...`);
+    return null;
+  }
 
   const layout = await BusLayout.findById(t.layout);
   if (!layout) throw new Error("Layout no encontrado");
@@ -161,6 +175,7 @@ export const extendTemplateByOneDay = async (templateId) => {
   // generar asientos y crear servicio
   const seats = buildSeatsFromLayout(layout);
 
+  // 🔥 AGREGAR serviceName y serviceNumber
   const newService = await GeneratedService.create({
     template: t._id,
     date: nextDate,
@@ -168,8 +183,12 @@ export const extendTemplateByOneDay = async (templateId) => {
     origin: t.origin,
     destination: t.destination,
     busLayout: layout._id,
+    serviceName: t.serviceName,
+    serviceNumber: t.serviceNumber,
     seats,
   });
+
+  console.log(`✅ Cron: Servicio extendido - ${t.serviceName} para ${nextDate.toISOString().split('T')[0]}`);
 
   return newService;
 };
@@ -185,20 +204,43 @@ export const extendAllTemplatesByOneDay = async () => {
     createdCount: 0,
     createdServices: [],
     errors: [],
+    skippedTemplates: [] // 🔥 NUEVO: templates sin serviceNumber/serviceName
   };
 
   for (const t of templates) {
     try {
+      // 🔥 VALIDACIÓN ADICIONAL: Verificar que el template tenga los campos necesarios
+      if (!t.serviceNumber || !t.serviceName) {
+        results.skippedTemplates.push({
+          templateId: t._id,
+          name: `${t.origin} → ${t.destination} ${t.time}`,
+          reason: "Falta serviceNumber o serviceName"
+        });
+        continue;
+      }
+
       const created = await extendTemplateByOneDay(t._id);
       if (created) {
         results.createdCount += 1;
-        results.createdServices.push(created);
+        results.createdServices.push({
+          serviceId: created._id,
+          serviceName: created.serviceName,
+          date: created.date,
+          template: t._id
+        });
       }
     } catch (err) {
       // no detener todo si una plantilla falla
-      results.errors.push({ templateId: t._id, message: err.message });
+      results.errors.push({
+        templateId: t._id,
+        templateName: t.serviceName || `${t.origin} → ${t.destination} ${t.time}`,
+        message: err.message
+      });
     }
   }
+
+  // 🔥 LOGGING MEJORADO
+  console.log(`🎯 Cron ejecutado: ${results.createdCount} servicios creados, ${results.errors.length} errores, ${results.skippedTemplates.length} templates omitidos`);
 
   return results;
 };

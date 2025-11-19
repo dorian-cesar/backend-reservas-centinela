@@ -47,9 +47,10 @@ connectDB()
     .then(() => {
 
         if (process.env.NODE_ENV !== 'development') {
-            startExtendServicesCron();
             startSeatReleaseCron();
         }
+        startExtendServicesCron();
+
         app.listen(PORT, () => console.log(`🚍 Servidor corriendo en puerto ${PORT}`));
     })
     .catch((err) => {

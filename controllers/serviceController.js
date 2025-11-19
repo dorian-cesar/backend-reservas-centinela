@@ -67,18 +67,24 @@ export const generateServices = async (req, res) => {
     for (const t of templates) {
       const start = new Date(t.startDate);
 
+      // Validar que el template tenga serviceNumber y serviceName
+      if (!t.serviceNumber || !t.serviceName) {
+        console.warn(`⚠️  Template ${t._id} sin serviceNumber/serviceName, saltando...`);
+        continue;
+      }
+
       for (let i = 0; i < 14; i++) {
         const currentDate = new Date(start);
         currentDate.setDate(start.getDate() + i);
 
-        // convertir getDay() -> 1=Lunes ... 7=Domingo
         const dayOfWeek = currentDate.getDay() === 0 ? 7 : currentDate.getDay();
-
         if (!t.daysOfWeek.includes(dayOfWeek)) continue;
 
-        // Cargar layout y generar asientos
         const layout = await BusLayout.findById(t.layout);
-        if (!layout) continue;
+        if (!layout) {
+          console.warn(`⚠️  Layout no encontrado para template ${t._id}, saltando...`);
+          continue;
+        }
 
         const seats = [];
 
@@ -112,6 +118,10 @@ export const generateServices = async (req, res) => {
           });
         }
 
+        // 🔥 Asegurar que serviceName y serviceNumber no sean null
+        const serviceName = t.serviceName || `${t.origin} → ${t.destination} ${t.time}`;
+        const serviceNumber = t.serviceNumber || 0;
+
         await GeneratedService.create({
           template: t._id,
           date: currentDate,
@@ -119,8 +129,12 @@ export const generateServices = async (req, res) => {
           origin: t.origin,
           destination: t.destination,
           busLayout: layout._id,
+          serviceName: serviceName,
+          serviceNumber: serviceNumber,
           seats,
         });
+
+        console.log(`✅ Servicio creado: ${serviceName}`);
       }
     }
 
@@ -129,6 +143,7 @@ export const generateServices = async (req, res) => {
     });
 
   } catch (error) {
+    console.error("Error en generateServices:", error);
     res.status(500).json({ error: error.message });
   }
 };
@@ -191,12 +206,9 @@ export const generateOne = async (req, res) => {
       const currentDate = new Date(start);
       currentDate.setDate(start.getDate() + i);
 
-      // convertir getDay() -> 1=Lunes ... 7=Domingo
       const dayOfWeek = currentDate.getDay() === 0 ? 7 : currentDate.getDay();
-
       if (!t.daysOfWeek.includes(dayOfWeek)) continue;
 
-      // Cargar layout y generar asientos
       const layout = await BusLayout.findById(t.layout);
       if (!layout) continue;
 
@@ -239,6 +251,8 @@ export const generateOne = async (req, res) => {
         origin: t.origin,
         destination: t.destination,
         busLayout: layout._id,
+        serviceName: t.serviceName, // Copiar del template
+        serviceNumber: t.serviceNumber, // Copiar del template
         seats,
       });
 
@@ -314,11 +328,23 @@ export const searchServices = async (req, res) => {
       destination,
       date: { $gte: startOfDay, $lte: endOfDay },
     })
-        .populate("template")
-        .populate("busLayout");
+      .populate("template")
+      .populate("busLayout");
 
     res.json(services);
 
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+};
+
+export const listTemplates = async (req, res) => {
+  try {
+    const templates = await ServiceTemplate.find()
+      .populate("layout")
+      .sort({ serviceNumber: 1 });
+
+    res.json(templates);
   } catch (error) {
     res.status(500).json({ error: error.message });
   }
