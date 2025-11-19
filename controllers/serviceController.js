@@ -349,3 +349,87 @@ export const listTemplates = async (req, res) => {
     res.status(500).json({ error: error.message });
   }
 };
+
+export const getServicesByNumber = async (req, res) => {
+  try {
+    const { serviceNumber, date } = req.query;
+
+    // Validar que serviceNumber esté presente
+    if (!serviceNumber) {
+      return res.status(400).json({
+        error: "Debes enviar serviceNumber (número del servicio)"
+      });
+    }
+
+    // Convertir serviceNumber a número
+    const number = parseInt(serviceNumber);
+    if (isNaN(number)) {
+      return res.status(400).json({
+        error: "serviceNumber debe ser un número válido"
+      });
+    }
+
+    // Construir query base
+    let query = { serviceNumber: number };
+
+    // Si se proporciona fecha, agregar filtro de fecha
+    if (date) {
+      const startOfDay = new Date(date + "T00:00:00.000Z");
+      const endOfDay = new Date(date + "T23:59:59.999Z");
+
+      query.date = { $gte: startOfDay, $lte: endOfDay };
+    }
+
+    // Buscar servicios
+    const services = await GeneratedService.find(query)
+      .populate("template")
+      .populate("busLayout")
+      .sort({ date: date ? 1 : -1 }); // Si hay fecha, orden ascendente, sino descendente
+
+    // Si no se encontraron servicios
+    if (services.length === 0) {
+      const message = date
+        ? `No se encontraron servicios con número ${number} para la fecha ${date}`
+        : `No se encontraron servicios con número ${number}`;
+
+      return res.status(404).json({
+        error: message,
+        serviceNumber: number,
+        date: date || 'No especificada'
+      });
+    }
+
+    // Enriquecer respuesta con información adicional
+    const enrichedServices = services.map(service => {
+      const serviceObj = service.toObject();
+      const now = new Date();
+      const serviceDateTime = new Date(service.date);
+      const timeDiffHours = (serviceDateTime - now) / (1000 * 60 * 60);
+
+      return {
+        ...serviceObj,
+        timeRemaining: `${Math.max(0, timeDiffHours).toFixed(1)} horas`,
+        isPast: timeDiffHours < 0,
+        isToday: serviceDateTime.toDateString() === now.toDateString(),
+        canBeReleased: timeDiffHours > 48
+      };
+    });
+
+    res.json({
+      services: enrichedServices,
+      total: enrichedServices.length,
+      serviceNumber: number,
+      dateFilter: date || 'Todas las fechas',
+      templateInfo: services[0]?.template ? {
+        origin: services[0].template.origin,
+        destination: services[0].template.destination,
+        time: services[0].template.time,
+        daysOfWeek: services[0].template.daysOfWeek
+      } : null
+    });
+
+  } catch (error) {
+    console.error("Error en getServicesByNumber:", error);
+    res.status(500).json({ error: error.message });
+  }
+};
