@@ -861,6 +861,8 @@ export const getUserConfirmedReservations = async (req, res) => {
 
       return {
         _id: service._id,
+        serviceNumber: service.serviceNumber,
+        serviceName: service.serviceName,
         template: service.template,
         date: service.date,
         origin: service.origin,
