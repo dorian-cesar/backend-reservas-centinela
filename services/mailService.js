@@ -2,7 +2,6 @@ import sgMail from "@sendgrid/mail";
 import dotenv from "dotenv";
 dotenv.config();
 
-// CONFIGURACIÓN DE SENDGRID - Esto debe estar ANTES de cualquier uso de sgMail
 sgMail.setApiKey(process.env.SENDGRID_API_KEY);
 
 export const sendReservationEmailNotification = async (reservationPopulated) => {
@@ -22,19 +21,29 @@ export const sendReservationEmailNotification = async (reservationPopulated) => 
   // Obtener los datos del servicio o de la reserva
   const origin = service.origin || reservationPopulated.origin || "No especificado";
   const destination = service.destination || reservationPopulated.destination || "No especificado";
-
   const date = service.date || reservationPopulated.date || "No especificado";
-  const time = service.time || reservationPopulated.time || "No especificado";
+  const time = service.template?.time || service.time || reservationPopulated.time || "No especificado";
 
+  let travelDate = "No especificado";
+  let departureTime = "No especificado";
+
+  // 🔥 CORRECCIÓN: Fecha del servicio (date) y hora del template (time)
   if (date instanceof Date || (typeof date === 'string' && date !== "No especificado")) {
     const dateObj = new Date(date);
     if (!isNaN(dateObj.getTime())) {
+      // Formatear fecha: DD/MM/YYYY - solo la fecha del servicio
       travelDate = dateObj.toLocaleDateString('es-CL', {
         day: '2-digit',
         month: '2-digit',
         year: 'numeric'
       });
     }
+  }
+
+  // 🔥 CORRECCIÓN: Usar la hora del template, no calcularla de la fecha
+  if (time && time !== "No especificado") {
+    // time viene en formato "HH:MM" del template
+    departureTime = time;
   }
 
   const downloadUrl = `https://reserva-centinela.dev-wit.com/api/pdf/reservation/${reservationPopulated._id}/pdf`;
@@ -197,7 +206,7 @@ export const sendReservationEmailNotification = async (reservationPopulated) => 
                                 Fecha de viaje</td>
                             </tr>
                             <tr>
-                              <td style="font-size:14px; color:#333; font-weight:600;">${date}</td>
+                              <td style="font-size:14px; color:#333; font-weight:600;">${travelDate}</td>
                             </tr>
                           </table>
                         </td>
@@ -209,7 +218,7 @@ export const sendReservationEmailNotification = async (reservationPopulated) => 
                                 Horario salida</td>
                             </tr>
                             <tr>
-                              <td style="font-size:14px; color:#333; font-weight:600;">${time}</td>
+                              <td style="font-size:14px; color:#333; font-weight:600;">${departureTime}</td>
                             </tr>
                           </table>
                         </td>

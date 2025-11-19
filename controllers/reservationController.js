@@ -209,9 +209,16 @@ export const confirmReservation = async (req, res) => {
 
     // Poblar ESPECIFICANDO LOS CAMPOS NECESARIOS
     const populatedReservation = await Reservation.findById(reservation._id)
-      .populate("user", "name email") // Solo trae name y email del usuario
-      .populate("service");
-
+      .populate("user", "name email")
+      .populate({
+        path: "service",
+        select: "origin destination date template",
+        populate: {
+          path: "template",
+          model: "ServiceTemplate",
+          select: "time origin destination"
+        }
+      });
     // Envío de correo asincrónico (no bloquea la respuesta)
     sendReservationEmailNotification(populatedReservation)
       .then(() => console.log(`Correo enviado para reserva ${reservation._id}`))
@@ -920,7 +927,7 @@ export const getUserConfirmedReservations = async (req, res) => {
           serviceNumber: service.serviceNumber,
           serviceName: service.serviceName,
           template: service.template,
-          date: service.date,
+          date: formatDateOnly(service.date),
           origin: service.origin,
           destination: service.destination,
           busLayout: service.busLayout,
@@ -944,4 +951,11 @@ export const getUserConfirmedReservations = async (req, res) => {
     console.error("Error obteniendo reservas confirmadas:", error);
     res.status(500).json({ error: error.message });
   }
+};
+
+const formatDateOnly = (d) => {
+  if (!d) return null;
+  const dt = new Date(d);
+  if (isNaN(dt.getTime())) return null;
+  return dt.toISOString().split('T')[0]; // "YYYY-MM-DD" -> corta la parte horaria
 };

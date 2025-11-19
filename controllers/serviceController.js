@@ -1,8 +1,15 @@
-// controllers/serviceController.js
-
 import ServiceTemplate from "../models/ServiceTemplate.js";
 import GeneratedService from "../models/GeneratedService.js";
 import BusLayout from "../models/BusLayout.js";
+
+//helper
+const formatDateOnly = (d) => {
+  if (!d) return null;
+  const dt = new Date(d);
+  if (isNaN(dt.getTime())) return null;
+  return dt.toISOString().split("T")[0]; // corta la hora
+};
+
 
 /**
  * @swagger
@@ -331,7 +338,12 @@ export const searchServices = async (req, res) => {
       .populate("template")
       .populate("busLayout");
 
-    res.json(services);
+    const formatted = services.map(service => ({
+      ...service.toObject(),
+      date: formatDateOnly(service.date),
+    }));
+
+    res.json(formatted);
 
   } catch (error) {
     res.status(500).json({ error: error.message });
