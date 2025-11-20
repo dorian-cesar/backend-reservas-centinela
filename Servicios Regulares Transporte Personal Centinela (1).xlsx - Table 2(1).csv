@@ -1,6 +1,7 @@
 DIA,,Servicios Calama,,,,
 ,DIRECCION,ORIGEN,DESTINO,HORA SALIDA,DESCRIPCION,RECORRIDO
-DOMINGO,Subida,AEROPUERTO CALAMA,CENTINELA OXIDO/SULFURO,22:00,Subida Administrativo Calama,Aeropuerto - Oxido/Sulfuro
+DOMINGO,,,,,,
+,Subida,AEROPUERTO CALAMA,CENTINELA OXIDO/SULFURO,22:00,Subida Administrativo Calama,Aeropuerto - Oxido/Sulfuro
 LUNES,Subida,CALAMA TER RECORRIDO,CENTINELA OXIDO/SULFURO,5:45,Subida Administrativo Calama,Terminal Balmaceda (Pullman) - Sub Agencia - Aeropuerto - Oxido/Sulfuro (*) Inicio recorrido
 ,Subida,AEROPUERTO CALAMA,CENTINELA SULFURO,7:00,Subida Administrativo Calama,Aeropuerto - Sulfuro
 ,Subida,AEROPUERTO CALAMA,CENTINELA OXIDO/SULFURO,7:30,Subida Administrativo Calama,Aeropuerto - Sulfuro/Oxido
@@ -10,7 +11,8 @@ LUNES,Subida,CALAMA TER RECORRIDO,CENTINELA OXIDO/SULFURO,5:45,Subida Administra
 ,Subida,AEROPUERTO CALAMA,CENTINELA OXIDO/SULFURO,22:45,Subida Planta,Terminal Balmaceda (Pullman) - Aeropuerto - Oxido/Sulfuro
 ,Bajada,CENTINELA SULFURO,AEROPUERTO CALAMA,20:00,Bajada Planta,Sulfuro- Aeropuerto
 ,Bajada,CENTINELA SULFURO,AEROP TERM CALAMA,21:00,Bajada Planta,Sulfuro - Oxido - Aeropuerto - Terminal Balmaceda (Pullman)
-MARTES,Subida,CALAMA TERMINAL AEROPUERTO,CENTINELA OXIDO/SULFURO,12:00,Subida Turno Mina,Terminal Balmaceda (Pullman) - Sub Agencia - Aeropuerto - Oxido/Sulfuro
+MARTES,,,,,,
+,Subida,CALAMA TERMINAL AEROPUERTO,CENTINELA OXIDO/SULFURO,12:00,Subida Turno Mina,Terminal Balmaceda (Pullman) - Sub Agencia - Aeropuerto - Oxido/Sulfuro
 ,Subida,CALAMA TERMINAL AEROPUERTO,CENTINELA OXIDO/SULFURO,16:30,Subida Turno Mina,Terminal Balmaceda (Pullman) - Sub Agencia - Aeropuerto - Oxido/Sulfuro
 ,Subida,AEROPUERTO CALAMA,CENTINELA SULFURO,17:00,Subida Turno Mina,Aeropuerto - Sulfuro
 ,Subida,CALAMA TERMINAL AEROPUERTO,CENTINELA SULFURO,22:00,Subida Turno Mina,Terminal Balmaceda (Pullman) - Sub agencia - Aeropuerto - Sulfuro
