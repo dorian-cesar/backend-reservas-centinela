@@ -1,5 +1,13 @@
 import jwt from "jsonwebtoken";
 import User from "../models/User.js";
+
+const signToken = (user) => {
+  if (!process.env.JWT_SECRET) {
+    console.error("JWT_SECRET no definido");
+    throw new Error("JWT_SECRET no definido");
+  }
+  return jwt.sign({ id: user._id, role: user.role }, process.env.JWT_SECRET, { expiresIn: "7d" });
+};
 /**
  * @swagger
  * /api/auth/register:
@@ -120,35 +128,62 @@ export const register = async (req, res) => {
 export const login = async (req, res) => {
   try {
     const { email, password } = req.body;
+    if (!email || !password) return res.status(400).json({ message: "Email y contraseña requeridos" });
 
-    // Una sola consulta
-    const user = await User.findOne({ email }).select("+password");
-    
-    if (!user || !(await user.comparePassword(password))) {
+    const normalizedEmail = String(email).trim().toLowerCase();
+    const user = await User.findOne({ email: normalizedEmail }).select("+password");
+
+    if (!user) {
+      console.warn("login: usuario no encontrado", normalizedEmail);
       return res.status(401).json({ message: "Credenciales inválidas" });
     }
 
-    const token = jwt.sign(
-      { id: user._id, role: user.role },
-      process.env.JWT_SECRET,
-      { expiresIn: "7d" }
-    );
+    const match = await user.comparePassword(password);
+    if (!match) {
+      console.warn("login: contraseña no coincide para user:", user._id.toString());
+      return res.status(401).json({ message: "Credenciales inválidas" });
+    }
 
-    // Eliminar password del objeto de respuesta
-    const userWithoutPassword = {
-      _id: user._id,
-      name: user.name,
-      email: user.email,
-      role: user.role
-    };
+    const token = signToken(user);
 
-    res.json({ 
-      token, 
-      user: userWithoutPassword 
+    res.json({
+      token,
+      user: { _id: user._id, name: user.name, email: user.email, role: user.role }
     });
-
   } catch (error) {
-    console.error('Login error:', error);
+    console.error("Login error:", error);
+    res.status(500).json({ message: "Error interno del servidor" });
+  }
+};
+
+export const loginRut = async (req, res) => {
+  try {
+    const { rut, password } = req.body;
+    if (!rut || !password) return res.status(400).json({ message: "RUT y contraseña son requeridos" });
+
+    const normalizedRut = String(rut).trim();
+    const user = await User.findOne({ rut: normalizedRut }).select("+password");
+
+    if (!user) {
+      console.warn("loginRut: usuario no encontrado RUT:", normalizedRut);
+      return res.status(401).json({ message: "Credenciales inválidas" });
+    }
+    if (user.activo === false) return res.status(403).json({ message: "Usuario inactivo" });
+
+    const isMatch = await user.comparePassword(password);
+    if (!isMatch) {
+      console.warn("loginRut: contraseña no coincide para user:", user._id.toString());
+      return res.status(401).json({ message: "Credenciales inválidas" });
+    }
+
+    const token = signToken(user);
+
+    res.json({
+      token,
+      user: { _id: user._id, name: user.name, email: user.email, role: user.role, rut: user.rut, activo: user.activo }
+    });
+  } catch (err) {
+    console.error("loginWithRut error:", err);
     res.status(500).json({ message: "Error interno del servidor" });
   }
 };

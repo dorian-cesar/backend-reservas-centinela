@@ -1,4 +1,44 @@
 import User from "../models/User.js";
+import bcrypt from "bcryptjs";
+
+
+export const createUser = async (req, res) => {
+  try {
+    const { name, email, password, role, rut, activo } = req.body;
+
+    // validar campos obligatorios
+    if (!name || !email || !password || !rut) {
+      return res.status(400).json({ success: false, message: "Nombre, email, contraseña y rut son requeridos" });
+    }
+
+    // verificar que no exista usuario con mismo email
+    const exists = await User.findOne({ email });
+    if (exists) {
+      return res.status(400).json({ success: false, message: "El correo ya está en uso" });
+    }
+
+    // crear usuario y hashear contraseña
+    const hashedPassword = await bcrypt.hash(password, 10);
+    const user = new User({
+      name,
+      email,
+      password: hashedPassword,
+      role: role || "user",
+      rut,
+      activo: activo !== undefined ? activo : true, // por defecto true
+    });
+
+    await user.save();
+
+    const userData = user.toObject();
+    delete userData.password; // eliminar password del objeto de respuesta
+
+    res.status(201).json({ success: true, data: userData });
+  } catch (err) {
+    console.error("createUser error:", err);
+    res.status(500).json({ success: false, message: "Error del servidor" });
+  }
+};
 
 /**
  * @swagger
@@ -164,4 +204,28 @@ export const deleteUser = async (req, res) => {
     return res.status(404).json({ error: "Usuario no encontrado" });
   }
   res.json({ message: "Usuario eliminado" });
+};
+
+export const toggleUserActivo = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { activo } = req.body;
+
+    if (activo === undefined) {
+      return res.status(400).json({ success: false, message: "`activo` es requerido" });
+    }
+
+    const user = await User.findByIdAndUpdate(
+      id,
+      { activo },
+      { new: true, runValidators: true }
+    ).select("-password").lean();
+
+    if (!user) return res.status(404).json({ success: false, message: "Usuario no encontrado" });
+
+    res.json({ success: true, data: user });
+  } catch (err) {
+    console.error("toggleUserActivo error:", err);
+    res.status(500).json({ success: false, message: "Error del servidor" });
+  }
 };

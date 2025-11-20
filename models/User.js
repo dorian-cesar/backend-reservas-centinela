@@ -6,7 +6,8 @@ const userSchema = new mongoose.Schema({
   email: { type: String, unique: true },
   password: String,
   role: { type: String, enum: ["user", "admin", "superUser"], default: "user" },
-  rut: String
+  rut: { type: String, unique: true, sparse: true },
+  activo: { type: Boolean, default: true }
 });
 
 userSchema.pre("save", async function (next) {
