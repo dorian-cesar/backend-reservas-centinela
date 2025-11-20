@@ -10,7 +10,6 @@ const formatDateOnly = (d) => {
   return dt.toISOString().split("T")[0]; // corta la hora
 };
 
-
 /**
  * @swagger
  * /api/services/template:
@@ -76,11 +75,13 @@ export const generateServices = async (req, res) => {
 
       // Validar que el template tenga serviceNumber y serviceName
       if (!t.serviceNumber || !t.serviceName) {
-        console.warn(`⚠️  Template ${t._id} sin serviceNumber/serviceName, saltando...`);
+        console.warn(
+          `⚠️  Template ${t._id} sin serviceNumber/serviceName, saltando...`
+        );
         continue;
       }
 
-      for (let i = 0; i < 14; i++) {
+      for (let i = 0; i < 56; i++) {
         const currentDate = new Date(start);
         currentDate.setDate(start.getDate() + i);
 
@@ -89,7 +90,9 @@ export const generateServices = async (req, res) => {
 
         const layout = await BusLayout.findById(t.layout);
         if (!layout) {
-          console.warn(`⚠️  Layout no encontrado para template ${t._id}, saltando...`);
+          console.warn(
+            `⚠️  Layout no encontrado para template ${t._id}, saltando...`
+          );
           continue;
         }
 
@@ -126,7 +129,8 @@ export const generateServices = async (req, res) => {
         }
 
         // 🔥 Asegurar que serviceName y serviceNumber no sean null
-        const serviceName = t.serviceName || `${t.origin} → ${t.destination} ${t.time}`;
+        const serviceName =
+          t.serviceName || `${t.origin} → ${t.destination} ${t.time}`;
         const serviceNumber = t.serviceNumber || 0;
 
         await GeneratedService.create({
@@ -146,9 +150,9 @@ export const generateServices = async (req, res) => {
     }
 
     res.json({
-      message: "Servicios generados exitosamente con asientos incluidos por 14 días",
+      message:
+        "Servicios generados exitosamente con asientos incluidos por 14 días",
     });
-
   } catch (error) {
     console.error("Error en generateServices:", error);
     res.status(500).json({ error: error.message });
@@ -198,7 +202,9 @@ export const generateOne = async (req, res) => {
   try {
     const templateId = req.params.id;
     if (!templateId) {
-      return res.status(400).json({ error: "Debes enviar el id de la template en params" });
+      return res
+        .status(400)
+        .json({ error: "Debes enviar el id de la template en params" });
     }
 
     const t = await ServiceTemplate.findById(templateId);
@@ -338,13 +344,12 @@ export const searchServices = async (req, res) => {
       .populate("template")
       .populate("busLayout");
 
-    const formatted = services.map(service => ({
+    const formatted = services.map((service) => ({
       ...service.toObject(),
       date: formatDateOnly(service.date),
     }));
 
     res.json(formatted);
-
   } catch (error) {
     res.status(500).json({ error: error.message });
   }
@@ -369,7 +374,7 @@ export const getServicesByNumber = async (req, res) => {
     // Validar que serviceNumber esté presente
     if (!serviceNumber) {
       return res.status(400).json({
-        error: "Debes enviar serviceNumber (número del servicio)"
+        error: "Debes enviar serviceNumber (número del servicio)",
       });
     }
 
@@ -377,7 +382,7 @@ export const getServicesByNumber = async (req, res) => {
     const number = parseInt(serviceNumber);
     if (isNaN(number)) {
       return res.status(400).json({
-        error: "serviceNumber debe ser un número válido"
+        error: "serviceNumber debe ser un número válido",
       });
     }
 
@@ -407,12 +412,12 @@ export const getServicesByNumber = async (req, res) => {
       return res.status(404).json({
         error: message,
         serviceNumber: number,
-        date: date || 'No especificada'
+        date: date || "No especificada",
       });
     }
 
     // Enriquecer respuesta con información adicional
-    const enrichedServices = services.map(service => {
+    const enrichedServices = services.map((service) => {
       const serviceObj = service.toObject();
       const now = new Date();
       const serviceDateTime = new Date(service.date);
@@ -423,7 +428,7 @@ export const getServicesByNumber = async (req, res) => {
         timeRemaining: `${Math.max(0, timeDiffHours).toFixed(1)} horas`,
         isPast: timeDiffHours < 0,
         isToday: serviceDateTime.toDateString() === now.toDateString(),
-        canBeReleased: timeDiffHours > 48
+        canBeReleased: timeDiffHours > 48,
       };
     });
 
@@ -431,15 +436,16 @@ export const getServicesByNumber = async (req, res) => {
       services: enrichedServices,
       total: enrichedServices.length,
       serviceNumber: number,
-      dateFilter: date || 'Todas las fechas',
-      templateInfo: services[0]?.template ? {
-        origin: services[0].template.origin,
-        destination: services[0].template.destination,
-        time: services[0].template.time,
-        daysOfWeek: services[0].template.daysOfWeek
-      } : null
+      dateFilter: date || "Todas las fechas",
+      templateInfo: services[0]?.template
+        ? {
+            origin: services[0].template.origin,
+            destination: services[0].template.destination,
+            time: services[0].template.time,
+            daysOfWeek: services[0].template.daysOfWeek,
+          }
+        : null,
     });
-
   } catch (error) {
     console.error("Error en getServicesByNumber:", error);
     res.status(500).json({ error: error.message });
