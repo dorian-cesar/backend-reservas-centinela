@@ -70,13 +70,19 @@ export const getUsers = async (req, res) => {
     const query = {};
 
     if (q && q.trim() !== "") {
-      // búsqueda por nombre, email o rut (case-insensitive, partial)
       const regex = new RegExp(q.trim().replace(/[.*+?^${}()|[\]\\]/g, "\\$&"), "i");
       query.$or = [{ name: regex }, { email: regex }, { rut: regex }];
     }
 
+    // Excluir superUser SIEMPRE
+    query.role = { $ne: "superUser" };
+
+    // Permitir filtrar por rol (pero igual excluye superUser)
     if (role && role.trim() !== "") {
-      query.role = role.trim();
+      query.role = {
+        ...query.role,
+        $eq: role.trim()
+      };
     }
 
     // sorting
