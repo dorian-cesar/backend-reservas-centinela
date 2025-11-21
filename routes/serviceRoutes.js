@@ -1,14 +1,12 @@
 import express from "express";
-import { createTemplate, generateOne, generateServices, listTemplates, searchServices, getServicesByNumber } from "../controllers/serviceController.js";
+import { generateOne, generateServices, searchServices, getServicesByNumber } from "../controllers/serviceController.js";
 import { protect } from "../middleware/authMiddleware.js";
 const router = express.Router();
 
-router.post("/template", protect('admin'), createTemplate);
-router.post("/generate", protect('admin'), generateServices);
-router.post("/generateOne/:id", protect('admin'), generateOne);
+router.post("/generate", protect('superUser'), generateServices);
+router.post("/generateOne/:id", protect('superUser'), generateOne);
 router.get("/search", protect(), searchServices);
-router.get("/listTemplates", protect('admin'), listTemplates);
-router.get("/listServicesByNumber", protect('admin'), getServicesByNumber);
+router.get("/listServicesByNumber", protect('superUser'), getServicesByNumber);
 
 
 export default router;

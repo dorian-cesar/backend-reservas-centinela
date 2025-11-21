@@ -12,40 +12,6 @@ const formatDateOnly = (d) => {
 
 /**
  * @swagger
- * /api/services/template:
- *   post:
- *     summary: Crea un nuevo template de servicio.
- *     tags:
- *       - Templates
- *     security:
- *       - bearerAuth: []
- *     requestBody:
- *       required: true
- *       content:
- *         application/json:
- *           schema:
- *             $ref: '#/components/schemas/ServiceTemplate'
- *     responses:
- *       200:
- *         description: Template creado exitosamente.
- *         content:
- *           application/json:
- *             schema:
- *               $ref: '#/components/schemas/ServiceTemplate'
- *       400:
- *         description: Error de validación o datos incorrectos.
- */
-export const createTemplate = async (req, res) => {
-  try {
-    const template = await ServiceTemplate.create(req.body);
-    res.json(template);
-  } catch (error) {
-    res.status(400).json({ error: error.message });
-  }
-};
-
-/**
- * @swagger
  * /api/services/generate:
  *   post:
  *     summary: Genera servicios para todos los templates por 14 días desde la fecha de inicio.
@@ -350,18 +316,6 @@ export const searchServices = async (req, res) => {
     }));
 
     res.json(formatted);
-  } catch (error) {
-    res.status(500).json({ error: error.message });
-  }
-};
-
-export const listTemplates = async (req, res) => {
-  try {
-    const templates = await ServiceTemplate.find()
-      .populate("layout")
-      .sort({ serviceNumber: 1 });
-
-    res.json(templates);
   } catch (error) {
     res.status(500).json({ error: error.message });
   }
