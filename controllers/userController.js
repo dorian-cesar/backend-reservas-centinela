@@ -17,15 +17,20 @@ export const createUser = async (req, res) => {
       return res.status(400).json({ success: false, message: "El correo ya está en uso" });
     }
 
-    // crear usuario y hashear contraseña
-    const hashedPassword = await bcrypt.hash(password, 10);
+    // verificar que no exista usuario con mismo RUT
+    const rutExists = await User.findOne({ rut });
+    if (rutExists) {
+      return res.status(400).json({ success: false, message: "El RUT ya está en uso" });
+    }
+
+    // crear usuario - EL MIDDLEWARE PRE-SAVE SE ENCARGA DEL HASH
     const user = new User({
       name,
       email,
-      password: hashedPassword,
+      password,
       role: role || "user",
       rut,
-      activo: activo !== undefined ? activo : true, // por defecto true
+      activo: activo !== undefined ? activo : true,
     });
 
     await user.save();
@@ -33,9 +38,29 @@ export const createUser = async (req, res) => {
     const userData = user.toObject();
     delete userData.password; // eliminar password del objeto de respuesta
 
-    res.status(201).json({ success: true, data: userData });
+    res.status(201).json({ success: false, data: userData });
   } catch (err) {
     console.error("createUser error:", err);
+
+    // Manejar errores de validación de mongoose
+    if (err.name === "ValidationError") {
+      const errors = Object.values(err.errors).map(error => error.message);
+      return res.status(400).json({
+        success: false,
+        message: "Error de validación",
+        errors
+      });
+    }
+
+    // Manejar error de duplicado
+    if (err.code === 11000) {
+      const field = Object.keys(err.keyPattern)[0];
+      return res.status(400).json({
+        success: false,
+        message: `El ${field} ya está en uso`
+      });
+    }
+
     res.status(500).json({ success: false, message: "Error del servidor" });
   }
 };
