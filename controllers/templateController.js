@@ -14,9 +14,9 @@ const formatDateOnly = (d) => {
 export const createTemplate = async (req, res) => {
     try {
         const template = await ServiceTemplate.create(req.body);
-        res.json(template);
+        return res.status(200).json({ success: true, id: template._id, message: "Template creado" });
     } catch (error) {
-        res.status(400).json({ error: error.message });
+        return res.status(400).json({ error: error.message });
     }
 };
 
