@@ -19,11 +19,11 @@ export const getServiceReport = async (req, res) => {
             .populate("template")
             .populate({
                 path: "seats.reservedBy",
-                select: "name email"
+                select: "name email rut"
             })
             .populate({
                 path: "seats.confirmedBy",
-                select: "name email"
+                select: "name email rut"
             })
             .populate("busLayout"); // <<< importante: poblar el layout
 
@@ -65,6 +65,7 @@ export const getServiceReport = async (req, res) => {
                     floor: seat.floor,
                     passengerName: passenger?.name || "N/A",
                     passengerEmail: passenger?.email || "N/A",
+                    passengerRut: passenger?.rut || "N/A",
                     status: seat.confirmed ? "confirmado" : "reservado",
                     // reservationDate: seat.reservationExpiresAt
                 };
