@@ -393,15 +393,175 @@ export const getServicesByNumber = async (req, res) => {
       dateFilter: date || "Todas las fechas",
       templateInfo: services[0]?.template
         ? {
-            origin: services[0].template.origin,
-            destination: services[0].template.destination,
-            time: services[0].template.time,
-            daysOfWeek: services[0].template.daysOfWeek,
-          }
+          origin: services[0].template.origin,
+          destination: services[0].template.destination,
+          time: services[0].template.time,
+          daysOfWeek: services[0].template.daysOfWeek,
+        }
         : null,
     });
   } catch (error) {
     console.error("Error en getServicesByNumber:", error);
     res.status(500).json({ error: error.message });
+  }
+};
+
+export const getGeneratedServices = async (req, res) => {
+  try {
+    const {
+      serviceNumber,
+      origin,
+      destination,
+      startDate,
+      endDate,
+      page = 1,
+      limit = 20
+    } = req.query;
+
+    // Construir query
+    const query = {};
+
+    if (serviceNumber) {
+      query.serviceNumber = parseInt(serviceNumber);
+    }
+
+    if (origin) {
+      query.origin = new RegExp(origin, 'i');
+    }
+
+    if (destination) {
+      query.destination = new RegExp(destination, 'i');
+    }
+
+    // Filtro por rango de fechas
+    if (startDate || endDate) {
+      query.date = {};
+      if (startDate) {
+        query.date.$gte = new Date(startDate + "T00:00:00.000Z");
+      }
+      if (endDate) {
+        query.date.$lte = new Date(endDate + "T23:59:59.999Z");
+      }
+    }
+
+    // Paginación
+    const pageNum = Math.max(1, parseInt(page));
+    const limitNum = Math.max(1, parseInt(limit));
+    const skip = (pageNum - 1) * limitNum;
+
+    // Consulta SIN populate de template (puede no existir)
+    const [services, total] = await Promise.all([
+      GeneratedService.find(query)
+        .populate("busLayout") // Solo el layout que siempre existe
+        .sort({ date: 1, time: 1 })
+        .skip(skip)
+        .limit(limitNum)
+        .lean(),
+      GeneratedService.countDocuments(query)
+    ]);
+
+    // Formatear fechas
+    const formattedServices = services.map(service => ({
+      ...service,
+      date: formatDateOnly(service.date),
+      // Agregar información básica incluso si template fue eliminado
+      serviceInfo: {
+        serviceNumber: service.serviceNumber,
+        serviceName: service.serviceName,
+        origin: service.origin,
+        destination: service.destination,
+        time: service.time,
+        date: formatDateOnly(service.date)
+      }
+    }));
+
+    const totalPages = Math.ceil(total / limitNum);
+
+    res.json({
+      success: true,
+      data: formattedServices,
+      pagination: {
+        total,
+        totalPages,
+        page: pageNum,
+        limit: limitNum
+      }
+    });
+
+  } catch (error) {
+    console.error("Error en getGeneratedServices:", error);
+    res.status(500).json({
+      success: false,
+      error: error.message
+    });
+  }
+};
+
+export const deleteGeneratedServices = async (req, res) => {
+  try {
+    const { serviceNumber } = req.params;
+    const { fromDate } = req.body;
+
+    if (!fromDate) {
+      return res.status(400).json({
+        success: false,
+        error: "El parámetro 'fromDate' es requerido"
+      });
+    }
+
+    if (!serviceNumber) {
+      return res.status(400).json({
+        success: false,
+        error: "El parámetro 'serviceNumber' es requerido"
+      });
+    }
+
+    const serviceNumberInt = parseInt(serviceNumber);
+    if (isNaN(serviceNumberInt)) {
+      return res.status(400).json({
+        success: false,
+        error: "serviceNumber debe ser un número válido"
+      });
+    }
+
+    // Buscar algunos servicios para mostrar información antes de eliminar
+    const sampleServices = await GeneratedService.find({
+      serviceNumber: serviceNumberInt,
+      date: { $gte: new Date(fromDate + "T00:00:00.000Z") }
+    })
+      .sort({ date: 1 })
+      .limit(5)
+      .lean();
+
+    // Ejecutar eliminación
+    const result = await GeneratedService.deleteMany({
+      serviceNumber: serviceNumberInt,
+      date: {
+        $gte: new Date(fromDate + "T00:00:00.000Z")
+      }
+    });
+
+    // Información para la respuesta
+    const serviceInfo = sampleServices.length > 0 ? {
+      serviceName: sampleServices[0].serviceName,
+      origin: sampleServices[0].origin,
+      destination: sampleServices[0].destination
+    } : null;
+
+    res.json({
+      success: true,
+      message: `Servicios con número ${serviceNumberInt} eliminados exitosamente desde ${fromDate}`,
+      deletedCount: result.deletedCount,
+      serviceNumber: serviceNumberInt,
+      fromDate: formatDateOnly(fromDate),
+      ...serviceInfo
+    });
+
+  } catch (error) {
+    console.error("Error en deleteServicesByNumber:", error);
+    res.status(500).json({
+      success: false,
+      error: error.message
+    });
   }
 };

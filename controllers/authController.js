@@ -137,6 +137,8 @@ export const login = async (req, res) => {
       console.warn("login: usuario no encontrado", normalizedEmail);
       return res.status(401).json({ message: "Credenciales inválidas" });
     }
+   
+    if (user.activo === false) return res.status(403).json({ message: "Usuario inactivo" });
 
     const match = await user.comparePassword(password);
     if (!match) {
