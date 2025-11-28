@@ -12,7 +12,7 @@ dotenv.config();
 const __dirname = path.resolve();
 const csvFilePath = path.join(
   __dirname,
-  "Dotación_131125.xlsx - INFORME_DOTACION_Montenegro Jor.csv"
+  "nuevo personal centinela - Hoja 1.csv"
 );
 
 await mongoose.connect(process.env.MONGO_URI, {
@@ -24,9 +24,9 @@ console.log("✅ Conectado a MongoDB, uri: " + process.env.MONGO_URI);
 // Función para crear usuario
 const createUser = async (row) => {
   try {
-    const rut = row["RUT"]?.trim();
-    const name = row["Nombre Completo"]?.trim();
-    const email = row["Mail Laboral"]?.trim()?.toLowerCase();
+    const rut = row["Rut"]?.trim();
+    const name = row["Name"]?.trim();
+    const email = row["Mail"]?.trim()?.toLowerCase();
     const plainPassword = row["password"]?.trim() || "123456";
 
     if (!email || !name) {
