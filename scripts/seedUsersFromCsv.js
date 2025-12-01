@@ -10,10 +10,7 @@ import User from "../models/User.js";
 dotenv.config();
 
 const __dirname = path.resolve();
-const csvFilePath = path.join(
-  __dirname,
-  "nuevo personal centinela - Hoja 1.csv"
-);
+const csvFilePath = path.join(__dirname, "Nomina-01-12-2025.csv");
 
 await mongoose.connect(process.env.MONGO_URI, {
   useNewUrlParser: true,
