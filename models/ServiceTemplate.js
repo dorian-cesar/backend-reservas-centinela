@@ -25,6 +25,10 @@ const ServiceTemplateSchema = new mongoose.Schema({
   // Nombre del servicio (calculado automáticamente)
   serviceName: {
     type: String
+  },
+  active: {
+    type: Boolean,
+    default: true
   }
 });
 
