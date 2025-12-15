@@ -6,7 +6,8 @@ import {
     updateTemplate,
     deleteTemplate,
     listTemplatesByDay,
-    getTemplatesBySpecificDay
+    getTemplatesBySpecificDay,
+    toggleTemplateActive
 } from "../controllers/templateController.js";
 
 const router = express.Router();
@@ -19,6 +20,7 @@ router.get("/day/:day", getTemplatesBySpecificDay);
 router.get("/:id", getTemplateById);
 router.put("/:id", updateTemplate);
 router.delete("/:id", deleteTemplate);
+router.patch("/:id/toggle", toggleTemplateActive);
 
 // Rutas específicas para agrupación por días
 

@@ -198,7 +198,7 @@ export const extendTemplateByOneDay = async (templateId) => {
  * Devuelve resumen con contadores y servicios creados.
  */
 export const extendAllTemplatesByOneDay = async () => {
-  const templates = await ServiceTemplate.find();
+  const templates = await ServiceTemplate.find({ active: true });
   const results = {
     totalTemplates: templates.length,
     createdCount: 0,

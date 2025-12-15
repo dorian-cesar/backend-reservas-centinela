@@ -34,7 +34,7 @@ const formatDateOnly = (d) => {
  */
 export const generateServices = async (req, res) => {
   try {
-    const templates = await ServiceTemplate.find();
+    const templates = await ServiceTemplate.find({ active: true });
 
     for (const t of templates) {
       const start = new Date(t.startDate);

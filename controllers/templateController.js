@@ -23,7 +23,11 @@ export const createTemplate = async (req, res) => {
 // Listar todos los templates
 export const listTemplates = async (req, res) => {
     try {
-        const templates = await ServiceTemplate.find()
+
+        const { activeOnly } = req.query;
+        const filter = activeOnly === 'true' ? { active: true } : {};
+
+        const templates = await ServiceTemplate.find(filter)
             .populate("layout")
             .sort({ serviceNumber: 1 });
 
@@ -85,8 +89,12 @@ export const deleteTemplate = async (req, res) => {
 
 // Listar templates agrupados por día de la semana
 export const listTemplatesByDay = async (req, res) => {
+
+    const { activeOnly } = req.query;
+    const filter = activeOnly === 'true' ? { active: true } : {};
+
     try {
-        const templates = await ServiceTemplate.find()
+        const templates = await ServiceTemplate.find(filter)
             .populate("layout")
             .sort({ serviceNumber: 1 });
 
@@ -126,7 +134,8 @@ export const listTemplatesByDay = async (req, res) => {
                         company: template.company,
                         layout: template.layout,
                         startDate: template.startDate,
-                        daysOfWeek: template.daysOfWeek
+                        daysOfWeek: template.daysOfWeek,
+                        active: template.active ?? false
                     });
                 }
             });
@@ -172,6 +181,27 @@ export const getTemplatesBySpecificDay = async (req, res) => {
             .sort({ serviceNumber: 1 });
 
         res.json(templates);
+    } catch (error) {
+        res.status(500).json({ error: error.message });
+    }
+};
+
+export const toggleTemplateActive = async (req, res) => {
+    try {
+        const template = await ServiceTemplate.findById(req.params.id);
+
+        if (!template) {
+            return res.status(404).json({ error: "Template no encontrado" });
+        }
+
+        template.active = !template.active;
+        await template.save();
+
+        res.json({
+            success: true,
+            message: `Template ${template.active ? 'activado' : 'desactivado'}`,
+            template
+        });
     } catch (error) {
         res.status(500).json({ error: error.message });
     }
