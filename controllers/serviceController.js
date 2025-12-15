@@ -178,64 +178,93 @@ export const generateOne = async (req, res) => {
       return res.status(404).json({ error: "Template no encontrada" });
     }
 
-    const start = new Date(t.startDate);
     const createdServices = [];
 
-    for (let i = 0; i < 14; i++) {
-      const currentDate = new Date(start);
-      currentDate.setDate(start.getDate() + i);
+    const start = new Date(t.startDate);
+    const startUTC = new Date(Date.UTC(
+      start.getUTCFullYear(),
+      start.getUTCMonth(),
+      start.getUTCDate()
+    ));
 
-      const dayOfWeek = currentDate.getDay() === 0 ? 7 : currentDate.getDay();
-      if (!t.daysOfWeek.includes(dayOfWeek)) continue;
+    console.log(`startDate raw: ${t.startDate}`);
+    console.log(`startDate UTC normalized: ${startUTC.toISOString()}`);
+    console.log(`Template daysOfWeek: ${t.daysOfWeek}`);
 
-      const layout = await BusLayout.findById(t.layout);
-      if (!layout) continue;
+    for (const dayOfWeek of t.daysOfWeek) {
+      for (let week = 0; week < 2; week++) {
+        const serviceUTC = new Date(startUTC);
 
-      const seats = [];
+        const currentDayOfWeek =
+          serviceUTC.getUTCDay() === 0 ? 7 : serviceUTC.getUTCDay();
 
-      // Piso 1
-      if (layout.floor1?.seatMap) {
-        layout.floor1.seatMap.forEach((row) => {
-          row.forEach((seat) => {
-            if (seat && seat !== "") {
-              seats.push({
-                seatNumber: seat,
-                floor: 1,
-                status: "available",
-              });
-            }
+        let daysToAdd = dayOfWeek - currentDayOfWeek;
+
+        if (daysToAdd < 0) {
+          daysToAdd += 7;
+        }
+
+        daysToAdd += week * 7;
+
+        serviceUTC.setUTCDate(startUTC.getUTCDate() + daysToAdd);
+
+        const normalizedDate = new Date(Date.UTC(
+          serviceUTC.getUTCFullYear(),
+          serviceUTC.getUTCMonth(),
+          serviceUTC.getUTCDate()
+        ));
+
+        console.log(
+          `Generando servicio: día ${dayOfWeek}, semana ${week}, fecha UTC: ${normalizedDate.toISOString()}`
+        );
+
+        const layout = await BusLayout.findById(t.layout);
+        if (!layout) continue;
+
+        const seats = [];
+
+        if (layout.floor1?.seatMap) {
+          layout.floor1.seatMap.forEach((row) => {
+            row.forEach((seat) => {
+              if (seat && seat !== "") {
+                seats.push({
+                  seatNumber: seat,
+                  floor: 1,
+                  status: "available",
+                });
+              }
+            });
           });
-        });
-      }
+        }
 
-      // Piso 2
-      if (layout.floor2?.seatMap) {
-        layout.floor2.seatMap.forEach((row) => {
-          row.forEach((seat) => {
-            if (seat && seat !== "") {
-              seats.push({
-                seatNumber: seat,
-                floor: 2,
-                status: "available",
-              });
-            }
+        if (layout.floor2?.seatMap) {
+          layout.floor2.seatMap.forEach((row) => {
+            row.forEach((seat) => {
+              if (seat && seat !== "") {
+                seats.push({
+                  seatNumber: seat,
+                  floor: 2,
+                  status: "available",
+                });
+              }
+            });
           });
+        }
+
+        const newService = await GeneratedService.create({
+          template: t._id,
+          date: normalizedDate,
+          time: t.time,
+          origin: t.origin,
+          destination: t.destination,
+          busLayout: layout._id,
+          serviceName: t.serviceName,
+          serviceNumber: t.serviceNumber,
+          seats,
         });
+
+        createdServices.push(newService);
       }
-
-      const newService = await GeneratedService.create({
-        template: t._id,
-        date: currentDate,
-        time: t.time,
-        origin: t.origin,
-        destination: t.destination,
-        busLayout: layout._id,
-        serviceName: t.serviceName, // Copiar del template
-        serviceNumber: t.serviceNumber, // Copiar del template
-        seats,
-      });
-
-      createdServices.push(newService);
     }
 
     res.json({
@@ -247,6 +276,7 @@ export const generateOne = async (req, res) => {
     res.status(500).json({ error: error.message });
   }
 };
+
 
 /**
  * @swagger
