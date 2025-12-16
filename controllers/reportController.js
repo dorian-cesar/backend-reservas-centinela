@@ -117,7 +117,7 @@ export const getServiceReport = async (req, res) => {
 
 export const getDateRangeReport = async (req, res) => {
     try {
-        const { startDate, endDate, origin, destination } = req.query;
+        const { startDate, endDate, origin, destination, page = 1, limit = 20, } = req.query;
 
         if (!startDate || !endDate) {
             return res.status(400).json({
@@ -125,22 +125,28 @@ export const getDateRangeReport = async (req, res) => {
             });
         }
 
+        const pageNumber = Math.max(1, parseInt(page, 10) || 1);
+        const limitNumber = Math.max(1, Math.min(parseInt(limit, 10) || 20, 100));
+
         const start = new Date(startDate + "T00:00:00.000Z");
         const end = new Date(endDate + "T23:59:59.999Z");
 
-        // Construir query base
+        if (isNaN(start.getTime()) || isNaN(end.getTime())) {
+            return res.status(400).json({
+                error: "Formato de fecha inválido"
+            });
+        }
+
+
         let query = {
             date: { $gte: start, $lte: end }
         };
 
-        // Agregar filtros opcionales
         if (origin) query.origin = origin;
         if (destination) query.destination = destination;
 
-        // Helper: contar asientos válidos en un busLayout (lee seatMap si existe)
         const countSeatsFromLayout = (layout) => {
             if (!layout) return 0;
-            // Si layout tiene 'capacidad' numérica y válida, preferirla
             if (layout.capacidad && Number.isInteger(layout.capacidad)) return layout.capacidad;
 
             let total = 0;
@@ -159,6 +165,10 @@ export const getDateRangeReport = async (req, res) => {
             return total;
         };
 
+        const totalDocuments = await GeneratedService.countDocuments(query);
+        const totalPages = Math.ceil(totalDocuments / limitNumber);
+        const skip = (pageNumber - 1) * limitNumber;
+
         const services = await GeneratedService.find(query)
             .populate("template")
             .populate("busLayout")
@@ -166,9 +176,11 @@ export const getDateRangeReport = async (req, res) => {
                 path: "seats.confirmedBy",
                 select: "name email"
             })
-            .sort({ date: 1, "template.time": 1 });
+            .sort({ date: 1, "template.time": 1 })
+            .skip(skip)
+            .limit(limitNumber);
 
-        // Procesar servicios para el reporte
+
         const serviceReports = services.map(service => {
             const confirmedPassengers = (service.seats || []).filter(seat => seat.confirmed).length;
             const totalPassengers = (service.seats || []).filter(seat => seat.confirmed || seat.reserved).length;
@@ -213,6 +225,14 @@ export const getDateRangeReport = async (req, res) => {
                 endDate: formatDateOnly(end),
                 origin: origin || "Todos",
                 destination: destination || "Todos"
+            },
+            pagination: {
+                currentPage: pageNumber,
+                itemsPerPage: limitNumber,
+                totalItems: totalDocuments,
+                totalPages: totalPages,
+                hasNextPage: pageNumber < totalPages,
+                hasPreviousPage: pageNumber > 1
             },
             services: serviceReports,
             summary: {
