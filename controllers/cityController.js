@@ -34,7 +34,9 @@ import ServiceTemplate from "../models/ServiceTemplate.js";
  */
 export const listOrigins = async (req, res) => {
   try {
-    const origins = await ServiceTemplate.distinct("origin");
+    const origins = await ServiceTemplate.distinct("origin", {
+      active: true
+    });
     res.json({ origins });
   } catch (error) {
     res.status(500).json({ error: error.message });
@@ -86,9 +88,10 @@ export const listDestinationsByOrigin = async (req, res) => {
   try {
     const { origin } = req.params;
 
-    const destinations = await ServiceTemplate.find({ origin }).distinct(
-        "destination"
-    );
+    const destinations = await ServiceTemplate.distinct("destination", {
+      origin,
+      active: true
+    });
 
     res.json({
       origin,
@@ -132,7 +135,10 @@ export const listDestinationsByOrigin = async (req, res) => {
  */
 export const originDestinationMap = async (req, res) => {
   try {
-    const templates = await ServiceTemplate.find({}, "origin destination");
+    const templates = await ServiceTemplate.find(
+      { active: true },
+      "origin destination"
+    );
 
     const map = {};
 
