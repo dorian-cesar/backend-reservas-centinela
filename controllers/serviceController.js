@@ -482,7 +482,11 @@ export const getGeneratedServices = async (req, res) => {
     // Consulta SIN populate de template (puede no existir)
     const [services, total] = await Promise.all([
       GeneratedService.find(query)
-        .populate("busLayout") // Solo el layout que siempre existe
+        .populate("busLayout")
+        .populate({
+          path: "seats.confirmedBy",
+          select: "name email"
+        })
         .sort({ date: 1, time: 1 })
         .skip(skip)
         .limit(limitNum)
@@ -490,20 +494,38 @@ export const getGeneratedServices = async (req, res) => {
       GeneratedService.countDocuments(query)
     ]);
 
-    // Formatear fechas
-    const formattedServices = services.map(service => ({
-      ...service,
-      date: formatDateOnly(service.date),
-      // Agregar información básica incluso si template fue eliminado
-      serviceInfo: {
-        serviceNumber: service.serviceNumber,
-        serviceName: service.serviceName,
-        origin: service.origin,
-        destination: service.destination,
-        time: service.time,
-        date: formatDateOnly(service.date)
-      }
-    }));
+    const formattedServices = services.map(service => {
+      const confirmedSeats = (service.seats || []).filter(seat => seat.confirmed);
+      const confirmedPassengers = confirmedSeats.length;
+
+      const totalPassengers = (service.seats || []).filter(
+        seat => seat.confirmed || seat.reserved
+      ).length;
+
+      return {
+        ...service,
+        date: formatDateOnly(service.date),
+
+        serviceInfo: {
+          serviceNumber: service.serviceNumber,
+          serviceName: service.serviceName,
+          origin: service.origin,
+          destination: service.destination,
+          time: service.time,
+          date: formatDateOnly(service.date)
+        },
+
+        seatsSummary: {
+          confirmedPassengers,
+          totalPassengers
+        },
+
+        confirmedSeats: confirmedSeats.map(seat => ({
+          seatNumber: seat.seatNumber,
+          confirmedBy: seat.confirmedBy
+        }))
+      };
+    });
 
     const totalPages = Math.ceil(total / limitNum);
 
