@@ -621,6 +621,7 @@ export const deleteGeneratedServices = async (req, res) => {
 export const deleteGeneratedServiceById = async (req, res) => {
   try {
     const { id } = req.params;
+    const { force = false } = req.query;
 
     if (!id) {
       return res.status(400).json({
@@ -640,7 +641,7 @@ export const deleteGeneratedServiceById = async (req, res) => {
 
     const hasConfirmedSeats = service.seats.some(seat => seat.confirmed);
 
-    if (hasConfirmedSeats) {
+    if (!force && hasConfirmedSeats) {
       return res.status(409).json({
         success: false,
         error: "No se puede eliminar un servicio con asientos confirmados"
