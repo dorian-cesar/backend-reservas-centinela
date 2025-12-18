@@ -595,3 +595,56 @@ export const deleteGeneratedServices = async (req, res) => {
     });
   }
 };
+
+export const deleteGeneratedServiceById = async (req, res) => {
+  try {
+    const { id } = req.params;
+
+    if (!id) {
+      return res.status(400).json({
+        success: false,
+        error: "Debes enviar el id del servicio"
+      });
+    }
+
+    const service = await GeneratedService.findById(id);
+
+    if (!service) {
+      return res.status(404).json({
+        success: false,
+        error: "Servicio no encontrado"
+      });
+    }
+
+    const hasConfirmedSeats = service.seats.some(seat => seat.confirmed);
+
+    if (hasConfirmedSeats) {
+      return res.status(409).json({
+        success: false,
+        error: "No se puede eliminar un servicio con asientos confirmados"
+      });
+    }
+
+    await service.deleteOne();
+
+    res.json({
+      success: true,
+      message: "Servicio eliminado correctamente",
+      deletedService: {
+        id: service._id,
+        serviceNumber: service.serviceNumber,
+        serviceName: service.serviceName,
+        origin: service.origin,
+        destination: service.destination,
+        date: service.date?.toISOString().split("T")[0]
+      }
+    });
+
+  } catch (error) {
+    console.error("Error deleteGeneratedServiceById:", error);
+    res.status(500).json({
+      success: false,
+      error: error.message
+    });
+  }
+};

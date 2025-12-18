@@ -1,5 +1,5 @@
 import express from "express";
-import { generateOne, generateServices, searchServices, getServicesByNumber, getGeneratedServices, deleteGeneratedServices } from "../controllers/serviceController.js";
+import { generateOne, generateServices, searchServices, getServicesByNumber, getGeneratedServices, deleteGeneratedServices, deleteGeneratedServiceById } from "../controllers/serviceController.js";
 import { protect } from "../middleware/authMiddleware.js";
 const router = express.Router();
 
@@ -10,6 +10,6 @@ router.get("/listServicesByNumber", protect('superUser'), getServicesByNumber);
 
 router.get("/generated", protect('superUser'), getGeneratedServices);
 router.delete("/generated/:serviceNumber", protect('superUser'), deleteGeneratedServices);
-
+router.delete("/:id", protect('superUser'), deleteGeneratedServiceById)
 
 export default router;
