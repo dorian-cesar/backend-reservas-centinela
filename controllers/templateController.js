@@ -145,6 +145,7 @@ export const listTemplatesByDay = async (req, res) => {
                         company: template.company,
                         layout: template.layout,
                         startDate: template.startDate,
+                        endDate: template.endDate ?? null,
                         daysOfWeek: template.daysOfWeek,
                         active: template.active ?? false
                     });
