@@ -4,6 +4,7 @@ const ServiceTemplateSchema = new mongoose.Schema({
   origin: { type: String, required: true },
   destination: { type: String, required: true },
   startDate: { type: Date, required: true },
+  endDate: { type: Date, default: null },
   time: { type: String, required: true }, // "06:30"
   company: { type: String },
   layout: {
@@ -16,13 +17,11 @@ const ServiceTemplateSchema = new mongoose.Schema({
     type: [Number],
     required: true
   },
-  // Nuevo campo: número consecutivo único para este template
   serviceNumber: {
     type: Number,
     unique: true,
-    sparse: true // Permite null/undefined pero mantiene unicidad
+    sparse: true
   },
-  // Nombre del servicio (calculado automáticamente)
   serviceName: {
     type: String
   },
@@ -52,5 +51,25 @@ ServiceTemplateSchema.pre('save', async function (next) {
   }
   next();
 });
+
+
+ServiceTemplateSchema.statics.checkAndDeactivateExpired = async function () {
+  const now = new Date();
+  const yesterday = new Date(now);
+  yesterday.setDate(yesterday.getDate() - 1); // Verificar desde ayer para evitar race conditions
+
+  const result = await this.updateMany(
+    {
+      active: true,
+      endDate: { $ne: null, $lte: yesterday }
+    },
+    {
+      $set: { active: false }
+    }
+  );
+
+  return result;
+};
+
 
 export default mongoose.model("ServiceTemplate", ServiceTemplateSchema);

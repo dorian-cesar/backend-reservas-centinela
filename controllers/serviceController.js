@@ -39,6 +39,13 @@ export const generateServices = async (req, res) => {
     for (const t of templates) {
       const start = new Date(t.startDate);
 
+      const hasEndDate = t.endDate !== null && t.endDate !== undefined;
+      const maxDays = hasEndDate
+        ? Math.ceil((new Date(t.endDate) - start) / (1000 * 60 * 60 * 24)) + 1
+        : 56; // Mantener 56 días como default si no hay endDate
+
+      const actualMaxDays = Math.min(maxDays, 56); // Limitar a máximo 56 días
+
       // Validar que el template tenga serviceNumber y serviceName
       if (!t.serviceNumber || !t.serviceName) {
         console.warn(
@@ -47,9 +54,15 @@ export const generateServices = async (req, res) => {
         continue;
       }
 
-      for (let i = 0; i < 56; i++) {
+      for (let i = 0; i < actualMaxDays; i++) { // 🔥 Cambiar 56 por actualMaxDays
         const currentDate = new Date(start);
         currentDate.setDate(start.getDate() + i);
+
+        // 🔥 NUEVO: Si tiene endDate y la fecha supera endDate, detener
+        if (hasEndDate && currentDate > new Date(t.endDate)) {
+          console.log(`Template ${t._id}: fecha ${currentDate.toISOString()} supera endDate ${t.endDate}, deteniendo generación`);
+          break;
+        }
 
         const dayOfWeek = currentDate.getDay() === 0 ? 7 : currentDate.getDay();
         if (!t.daysOfWeek.includes(dayOfWeek)) continue;
@@ -166,14 +179,9 @@ export const generateServices = async (req, res) => {
  */
 export const generateOne = async (req, res) => {
   try {
-    const templateId = req.params.id;
-    if (!templateId) {
-      return res
-        .status(400)
-        .json({ error: "Debes enviar el id de la template en params" });
-    }
+    const { id } = req.params;
 
-    const t = await ServiceTemplate.findById(templateId);
+    const t = await ServiceTemplate.findById(id);
     if (!t) {
       return res.status(404).json({ error: "Template no encontrada" });
     }
@@ -181,98 +189,77 @@ export const generateOne = async (req, res) => {
     const createdServices = [];
 
     const start = new Date(t.startDate);
-    const startUTC = new Date(Date.UTC(
-      start.getUTCFullYear(),
-      start.getUTCMonth(),
-      start.getUTCDate()
-    ));
+    const hasEndDate = t.endDate !== null && t.endDate !== undefined;
 
-    console.log(`startDate raw: ${t.startDate}`);
-    console.log(`startDate UTC normalized: ${startUTC.toISOString()}`);
-    console.log(`Template daysOfWeek: ${t.daysOfWeek}`);
+    // 🔑 CLAVE:
+    const maxDays = hasEndDate
+      ? Math.ceil((new Date(t.endDate) - start) / (1000 * 60 * 60 * 24)) + 1
+      : 14;
 
-    for (const dayOfWeek of t.daysOfWeek) {
-      for (let week = 0; week < 2; week++) {
-        const serviceUTC = new Date(startUTC);
+    const layout = await BusLayout.findById(t.layout);
+    if (!layout) {
+      return res.status(400).json({ error: "Layout no encontrado" });
+    }
 
-        const currentDayOfWeek =
-          serviceUTC.getUTCDay() === 0 ? 7 : serviceUTC.getUTCDay();
+    for (let i = 0; i < maxDays; i++) {
+      const currentDate = new Date(start);
+      currentDate.setUTCDate(start.getUTCDate() + i);
 
-        let daysToAdd = dayOfWeek - currentDayOfWeek;
+      const dayOfWeek =
+        currentDate.getUTCDay() === 0 ? 7 : currentDate.getUTCDay();
 
-        if (daysToAdd < 0) {
-          daysToAdd += 7;
-        }
 
-        daysToAdd += week * 7;
+      if (!t.daysOfWeek.includes(dayOfWeek)) continue;
 
-        serviceUTC.setUTCDate(startUTC.getUTCDate() + daysToAdd);
+      const seats = [];
 
-        const normalizedDate = new Date(Date.UTC(
-          serviceUTC.getUTCFullYear(),
-          serviceUTC.getUTCMonth(),
-          serviceUTC.getUTCDate()
-        ));
-
-        console.log(
-          `Generando servicio: día ${dayOfWeek}, semana ${week}, fecha UTC: ${normalizedDate.toISOString()}`
+      if (layout.floor1?.seatMap) {
+        layout.floor1.seatMap.forEach(row =>
+          row.forEach(seat => {
+            if (seat) seats.push({ seatNumber: seat, floor: 1, status: "available" });
+          })
         );
-
-        const layout = await BusLayout.findById(t.layout);
-        if (!layout) continue;
-
-        const seats = [];
-
-        if (layout.floor1?.seatMap) {
-          layout.floor1.seatMap.forEach((row) => {
-            row.forEach((seat) => {
-              if (seat && seat !== "") {
-                seats.push({
-                  seatNumber: seat,
-                  floor: 1,
-                  status: "available",
-                });
-              }
-            });
-          });
-        }
-
-        if (layout.floor2?.seatMap) {
-          layout.floor2.seatMap.forEach((row) => {
-            row.forEach((seat) => {
-              if (seat && seat !== "") {
-                seats.push({
-                  seatNumber: seat,
-                  floor: 2,
-                  status: "available",
-                });
-              }
-            });
-          });
-        }
-
-        const newService = await GeneratedService.create({
-          template: t._id,
-          date: normalizedDate,
-          time: t.time,
-          origin: t.origin,
-          destination: t.destination,
-          busLayout: layout._id,
-          serviceName: t.serviceName,
-          serviceNumber: t.serviceNumber,
-          seats,
-        });
-
-        createdServices.push(newService);
       }
+
+      if (layout.floor2?.seatMap) {
+        layout.floor2.seatMap.forEach(row =>
+          row.forEach(seat => {
+            if (seat) seats.push({ seatNumber: seat, floor: 2, status: "available" });
+          })
+        );
+      }
+
+      // 🔒 Evitar duplicados
+      const exists = await GeneratedService.findOne({
+        template: t._id,
+        date: currentDate
+      });
+
+      if (exists) continue;
+
+      const newService = await GeneratedService.create({
+        template: t._id,
+        date: currentDate,
+        time: t.time,
+        origin: t.origin,
+        destination: t.destination,
+        busLayout: layout._id,
+        serviceName: t.serviceName,
+        serviceNumber: t.serviceNumber,
+        seats
+      });
+
+      createdServices.push(newService);
     }
 
     res.json({
-      message: `Servicios generados exitosamente para la template ${templateId}`,
+      message: "Servicios generados correctamente",
       count: createdServices.length,
-      services: createdServices,
+      services: createdServices
     });
+
   } catch (error) {
+    console.error("generateOne error:", error);
     res.status(500).json({ error: error.message });
   }
 };

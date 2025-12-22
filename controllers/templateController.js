@@ -13,8 +13,19 @@ const formatDateOnly = (d) => {
 // Crear template
 export const createTemplate = async (req, res) => {
     try {
-        const template = await ServiceTemplate.create(req.body);
-        return res.status(200).json({ success: true, id: template._id, message: "Template creado" });
+        // Asegurar que endDate pueda ser null
+        const templateData = {
+            ...req.body,
+            endDate: req.body.endDate || null
+        };
+
+        const template = await ServiceTemplate.create(templateData);
+        return res.status(200).json({
+            success: true,
+            id: template._id,
+            message: "Template creado",
+            template
+        });
     } catch (error) {
         return res.status(400).json({ error: error.message });
     }

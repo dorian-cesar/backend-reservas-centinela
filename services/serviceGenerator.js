@@ -62,9 +62,17 @@ export const generateForTemplate = async (templateId, windowDays = 14) => {
   const created = [];
   const start = new Date(t.startDate);
 
+  const maxDate = t.endDate
+    ? new Date(Math.min(start.getTime() + (windowDays * 24 * 60 * 60 * 1000), new Date(t.endDate).getTime()))
+    : new Date(start.getTime() + (windowDays * 24 * 60 * 60 * 1000));
+
   for (let i = 0; i < windowDays; i++) {
     const currentDate = new Date(start);
     currentDate.setDate(start.getDate() + i);
+
+    if (currentDate > maxDate) {
+      break;
+    }
 
     const dayOfWeek = currentDate.getDay() === 0 ? 7 : currentDate.getDay();
     if (!t.daysOfWeek.includes(dayOfWeek)) continue;
@@ -112,7 +120,24 @@ export const extendTemplateByOneDay = async (templateId) => {
   const t = await ServiceTemplate.findById(templateId);
   if (!t) throw new Error("Template no encontrada");
 
-  // 🔥 VALIDAR que el template tenga serviceNumber y serviceName
+  if (!t.active) {
+    console.warn(`⚠️  Template ${t._id} está inactiva, saltando...`);
+    return null;
+  }
+
+  if (t.endDate) {
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    const endDateOnly = new Date(t.endDate);
+    endDateOnly.setHours(0, 0, 0, 0);
+
+    if (today > endDateOnly) {
+      console.warn(`⚠️  Template ${t._id} ha superado su endDate (${t.endDate}), saltando...`);
+      return null;
+    }
+  }
+
+
   if (!t.serviceNumber || !t.serviceName) {
     console.warn(`⚠️  Template ${t._id} no tiene serviceNumber o serviceName, saltando...`);
     return null;
@@ -136,6 +161,10 @@ export const extendTemplateByOneDay = async (templateId) => {
     cursorDate = new Date(last.date);
   }
 
+  const hasEndDate = t.endDate !== null && t.endDate !== undefined;
+  const endDateObj = hasEndDate ? new Date(t.endDate) : null;
+  if (endDateObj) endDateObj.setHours(23, 59, 59, 999); // Incluir todo el día
+
   // Buscamos la Próxima fecha > cursorDate que cumpla daysOfWeek
   // Para evitar loops infinitos, limitamos a buscar en los próximos 365 días (seguro que hay algún día)
   let attempts = 0;
@@ -145,9 +174,14 @@ export const extendTemplateByOneDay = async (templateId) => {
 
   while (attempts < maxAttempts) {
     probe.setDate(probe.getDate() + 1); // avanzar un día
+
+    if (hasEndDate && probe > endDateObj) {
+      console.log(`Template ${t._id}: próxima fecha ${probe.toISOString()} supera endDate ${t.endDate}, deteniendo búsqueda`);
+      break;
+    }
+
     const dayOfWeek = probe.getDay() === 0 ? 7 : probe.getDay();
     if (t.daysOfWeek.includes(dayOfWeek)) {
-      // verificar duplicado exacto por fecha (same day)
       const startOfDay = new Date(probe);
       startOfDay.setUTCHours(0, 0, 0, 0);
       const endOfDay = new Date(probe);
@@ -169,6 +203,12 @@ export const extendTemplateByOneDay = async (templateId) => {
 
   if (!nextDate) {
     // no se encontró fecha útil en el rango
+    console.log(`Template ${t._id}: no se encontró próxima fecha válida${hasEndDate ? ` antes de ${t.endDate}` : ''}`);
+    return null;
+  }
+
+  if (hasEndDate && nextDate > endDateObj) {
+    console.log(`Template ${t._id}: fecha ${nextDate.toISOString()} está después de endDate ${t.endDate}, no se creará servicio`);
     return null;
   }
 
@@ -198,13 +238,17 @@ export const extendTemplateByOneDay = async (templateId) => {
  * Devuelve resumen con contadores y servicios creados.
  */
 export const extendAllTemplatesByOneDay = async () => {
+
+  await ServiceTemplate.checkAndDeactivateExpired();
+
   const templates = await ServiceTemplate.find({ active: true });
+
   const results = {
     totalTemplates: templates.length,
     createdCount: 0,
     createdServices: [],
     errors: [],
-    skippedTemplates: [] // 🔥 NUEVO: templates sin serviceNumber/serviceName
+    skippedTemplates: []
   };
 
   for (const t of templates) {
