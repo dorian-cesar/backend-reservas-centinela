@@ -67,15 +67,25 @@ export const getTemplateById = async (req, res) => {
 // Actualizar template
 export const updateTemplate = async (req, res) => {
     try {
-        const template = await ServiceTemplate.findByIdAndUpdate(
-            req.params.id,
-            req.body,
-            { new: true, runValidators: true }
-        ).populate("layout");
+        const existingTemplate = await ServiceTemplate.findById(req.params.id);
 
-        if (!template) {
+        if (!existingTemplate) {
             return res.status(404).json({ error: "Template no encontrado" });
         }
+
+        const updateData = {
+            ...req.body,
+            endDate: req.body.endDate || null
+        };
+
+        const serviceNumber = existingTemplate.serviceNumber || req.body.serviceNumber;
+        updateData.serviceName = `#${serviceNumber} ${updateData.origin || existingTemplate.origin} → ${updateData.destination || existingTemplate.destination} ${updateData.time || existingTemplate.time}`;
+
+        const template = await ServiceTemplate.findByIdAndUpdate(
+            req.params.id,
+            updateData,
+            { new: true, runValidators: true }
+        ).populate("layout");
 
         res.json(template);
     } catch (error) {

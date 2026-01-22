@@ -658,3 +658,189 @@ export const deleteGeneratedServiceById = async (req, res) => {
     });
   }
 };
+
+export const updateGeneratedServices = async (req, res) => {
+  try {
+    const { serviceNumber } = req.params;
+    const {
+      fromDate,
+      updateAll = false,
+      origin,
+      destination,
+      time,
+      serviceName: customServiceName
+    } = req.body;
+
+    if (!serviceNumber) {
+      return res.status(400).json({
+        success: false,
+        error: "El parámetro 'serviceNumber' es requerido en la ruta"
+      });
+    }
+
+    const serviceNumberInt = parseInt(serviceNumber);
+    if (isNaN(serviceNumberInt)) {
+      return res.status(400).json({
+        success: false,
+        error: "serviceNumber debe ser un número válido"
+      });
+    }
+
+    // Validar que al menos haya algo que actualizar
+    if (!origin && !destination && !time && !customServiceName) {
+      return res.status(400).json({
+        success: false,
+        error: "Debe proporcionar al menos un campo para actualizar (origin, destination, time o serviceName)"
+      });
+    }
+
+    // Validar fecha (a menos que sea updateAll)
+    if (!updateAll && !fromDate) {
+      return res.status(400).json({
+        success: false,
+        error: "Debe proporcionar 'fromDate' o establecer 'updateAll' en true"
+      });
+    }
+
+    // Construir query de búsqueda
+    const findQuery = { serviceNumber: serviceNumberInt };
+
+    if (!updateAll) {
+      findQuery.date = {
+        $gte: new Date(fromDate + "T00:00:00.000Z")
+      };
+    }
+
+    // Buscar servicios para actualizar
+    const servicesToUpdate = await GeneratedService.find(findQuery)
+      .sort({ date: 1 })
+      .limit(100) // Límite para evitar sobrecarga
+      .lean();
+
+    if (servicesToUpdate.length === 0) {
+      const message = updateAll
+        ? `No se encontraron servicios con número ${serviceNumberInt}`
+        : `No se encontraron servicios con número ${serviceNumberInt} desde ${fromDate}`;
+
+      return res.status(404).json({
+        success: false,
+        error: message
+      });
+    }
+
+    // Obtener un servicio de muestra para información
+    const sampleService = servicesToUpdate[0];
+
+    // Preparar datos de actualización
+    const updateData = {};
+    const updateFields = [];
+
+    if (origin) {
+      updateData.origin = origin;
+      updateFields.push('origin');
+    }
+
+    if (destination) {
+      updateData.destination = destination;
+      updateFields.push('destination');
+    }
+
+    if (time) {
+      updateData.time = time;
+      updateFields.push('time');
+    }
+
+    // Determinar el nuevo serviceName
+    let newServiceName = customServiceName;
+    if (!newServiceName) {
+      // Generar automáticamente basado en los campos proporcionados
+      const finalOrigin = origin || sampleService.origin;
+      const finalDestination = destination || sampleService.destination;
+      const finalTime = time || sampleService.time;
+
+      newServiceName = `#${serviceNumberInt} ${finalOrigin} → ${finalDestination} ${finalTime}`;
+    }
+
+    updateData.serviceName = newServiceName;
+    updateFields.push('serviceName');
+
+    // Preparar operaciones de actualización
+    const updatePromises = [];
+    const sampleUpdated = [];
+
+    for (const service of servicesToUpdate) {
+      const updatePromise = GeneratedService.findByIdAndUpdate(
+        service._id,
+        updateData,
+        { new: true, runValidators: true }
+      ).then(updated => ({
+        id: updated._id,
+        date: formatDateOnly(updated.date),
+        oldServiceName: service.serviceName,
+        newServiceName: updated.serviceName,
+        origin: updated.origin,
+        destination: updated.destination,
+        time: updated.time
+      }));
+
+      updatePromises.push(updatePromise);
+
+      // Guardar algunas muestras para la respuesta
+      if (sampleUpdated.length < 3) {
+        updatePromise.then(result => sampleUpdated.push(result));
+      }
+    }
+
+    // Ejecutar todas las actualizaciones
+    await Promise.all(updatePromises);
+
+    // Si hay más servicios que el límite, actualizar el resto en batch
+    let totalUpdated = servicesToUpdate.length;
+
+    if (servicesToUpdate.length >= 100) {
+      // Actualizar el resto en una sola operación
+      const bulkResult = await GeneratedService.updateMany(
+        {
+          serviceNumber: serviceNumberInt,
+          _id: { $nin: servicesToUpdate.map(s => s._id) },
+          ...(!updateAll && { date: { $gte: new Date(fromDate + "T00:00:00.000Z") } })
+        },
+        updateData
+      );
+
+      totalUpdated += bulkResult.modifiedCount;
+    }
+
+    // Obtener información del template (si existe)
+    const template = await ServiceTemplate.findOne({
+      serviceNumber: serviceNumberInt
+    }).select('origin destination time serviceName').lean();
+
+    res.json({
+      success: true,
+      message: `Servicios con número ${serviceNumberInt} actualizados exitosamente`,
+      updatedCount: totalUpdated,
+      fromDate: updateAll ? 'TODAS LAS FECHAS' : formatDateOnly(fromDate),
+      serviceNumber: serviceNumberInt,
+      fieldsUpdated: updateFields,
+      newServiceName: newServiceName,
+      sampleUpdated: sampleUpdated,
+      templateInfo: template ? {
+        origin: template.origin,
+        destination: template.destination,
+        time: template.time,
+        serviceName: template.serviceName
+      } : null,
+      note: totalUpdated > 100
+        ? `Se actualizaron los primeros 100 servicios individualmente y ${totalUpdated - 100} en batch`
+        : 'Todos los servicios actualizados individualmente'
+    });
+
+  } catch (error) {
+    console.error("Error en updateGeneratedServices:", error);
+    res.status(500).json({
+      success: false,
+      error: error.message
+    });
+  }
+};

@@ -33,21 +33,24 @@ const ServiceTemplateSchema = new mongoose.Schema({
 
 // Middleware para generar serviceNumber antes de guardar
 ServiceTemplateSchema.pre('save', async function (next) {
-  if (this.isNew && !this.serviceNumber) {
-    try {
+  try {
+    // Solo para nuevos documentos
+    if (this.isNew && !this.serviceNumber) {
       // Encontrar el máximo serviceNumber actual
       const maxTemplate = await mongoose.model('ServiceTemplate')
         .findOne()
         .sort({ serviceNumber: -1 });
 
       this.serviceNumber = maxTemplate ? maxTemplate.serviceNumber + 1 : 100;
-
-      // Generar el nombre del servicio automáticamente
-      this.serviceName = `#${this.serviceNumber} ${this.origin} → ${this.destination} ${this.time}`;
-
-    } catch (error) {
-      return next(error);
     }
+
+    // Siempre actualizar el serviceName con el formato correcto
+    // Manteniendo el número si ya existe
+    const numberPart = this.serviceNumber ? `#${this.serviceNumber}` : '#N/A';
+    this.serviceName = `${numberPart} ${this.origin} → ${this.destination} ${this.time}`;
+
+  } catch (error) {
+    return next(error);
   }
   next();
 });
