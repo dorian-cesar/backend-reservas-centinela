@@ -276,7 +276,7 @@ export const sendReservationEmailNotification = async (reservationPopulated) => 
 
   const msg = {
     to: to,
-    from: "viajes@pullmanbus.cl",
+    from: process.env.SENDGRID_EMAIL || "viajes@tandemindustrial.cl",
     subject: "Confirmación de pasaje - Tandem Industrial",
     html
   };
