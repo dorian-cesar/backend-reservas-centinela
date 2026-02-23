@@ -274,6 +274,8 @@ export const sendReservationEmailNotification = async (reservationPopulated) => 
 </html>
     `;
 
+  console.log("SENDGRID_EMAIL (env):", process.env.SENDGRID_EMAIL);
+
   const msg = {
     to: to,
     from: process.env.SENDGRID_EMAIL || "viajes@tandemindustrial.cl",
@@ -546,6 +548,8 @@ export const sendSeatReleasedEmailNotification = async (reservationPopulated, se
 
 </html>
   `;
+
+  console.log("SENDGRID_EMAIL (env):", process.env.SENDGRID_EMAIL);
 
   const msg = {
     to: to,
