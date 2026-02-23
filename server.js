@@ -41,6 +41,8 @@ connectDB()
         }
 
         app.listen(PORT, () => console.log(`🚍 Servidor corriendo en puerto ${PORT}`));
+        console.log("[DEBUG] Variables de entorno cargadas:");
+        console.log("EMAIL", process.env.SENDGRID_EMAIL);
     })
     .catch((err) => {
         console.error("Error al iniciar el servidor:", err);
