@@ -277,7 +277,7 @@ export const generateReservationPDF = (reservationPopulated) => {
 
             doc.fontSize(13).fillColor(colors.text)
                 .font('Helvetica')
-                .text('Tel: +56 2 3304 5632 • Email: clientes@pullmanbus.cl', containerX + 20, footerY + 25, {
+                .text('Tel: +56 2 3304 5632 • Email: viajes@tandemindustrial.cl', containerX + 20, footerY + 25, {
                     width: containerWidth - 40,
                     align: 'center'
                 });

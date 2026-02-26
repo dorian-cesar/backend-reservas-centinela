@@ -99,7 +99,7 @@ export const generateReservationPDF = (reservationPopulated) => {
             doc.moveDown(1);
 
             // Pie de página
-            doc.fontSize(8).text('Tándem Industrial • Tel: +56 2 3304 5632 • Email: clientes@pullmanbus.cl', { align: 'center' });
+            doc.fontSize(8).text('Tándem Industrial • Tel: +56 2 3304 5632 • Email: viajes@tandemindustrial.cl', { align: 'center' });
             doc.text('www.tandemindustrial.cl', { align: 'center' });
 
             doc.end();
