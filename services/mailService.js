@@ -250,7 +250,7 @@ export const sendReservationEmailNotification = async (reservationPopulated) => 
                     <div style="font-size:14px; font-weight:700; color:#333; margin-bottom:10px;">En caso de dudas o
                       consultas</div>
                     <div style="font-size:13px; color:#333; margin-bottom:8px;">Tel: +56 2 3304 5632 • Email:
-                      clientes@pullmanbus.cl</div>
+                      viajes@tandemindustrial.cl</div>
                   </td>
                 </tr>
 
