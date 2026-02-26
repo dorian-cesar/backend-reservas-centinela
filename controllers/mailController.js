@@ -109,7 +109,7 @@ export const sendReservationEmail = async (req, res) => {
 
     const msg = {
         to,
-        from: "viajes@pullmanbus.cl", // Cambia por tu email verificado en SendGrid
+        from: process.env.SENDGRID_EMAIL,
         templateId: "d-7be85246160348a490780c74d686991a",
         dynamicTemplateData: {
             reservation_number,
