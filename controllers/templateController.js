@@ -234,8 +234,8 @@ export const deactivateAllTemplates = async (req, res) => {
     try {
         // Modifica el estado 'active' a false en todos los documentos que estén como true
         const result = await ServiceTemplate.updateMany(
-            { active: true }, 
-            { $set: { active: false } }
+            { active: false }, 
+            { $set: { active: true } }
         );
 
         return res.status(200).json({
