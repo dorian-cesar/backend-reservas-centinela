@@ -7,10 +7,14 @@ import {
     deleteTemplate,
     listTemplatesByDay,
     getTemplatesBySpecificDay,
-    toggleTemplateActive
+    toggleTemplateActive,
+    deactivateAllTemplates
 } from "../controllers/templateController.js";
 
 const router = express.Router();
+
+// CORRECTO: Definir rutas estáticas primero
+router.patch("/deactivate-all", deactivateAllTemplates);
 
 // CRUD básico
 router.post("/", createTemplate);

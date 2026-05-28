@@ -228,3 +228,22 @@ export const toggleTemplateActive = async (req, res) => {
         res.status(500).json({ error: error.message });
     }
 };
+
+// Desactivar todos los templates
+export const deactivateAllTemplates = async (req, res) => {
+    try {
+        // Modifica el estado 'active' a false en todos los documentos que estén como true
+        const result = await ServiceTemplate.updateMany(
+            { active: true }, 
+            { $set: { active: false } }
+        );
+
+        return res.status(200).json({
+            success: true,
+            message: "Todos los templates han sido desactivados",
+            modifiedCount: result.modifiedCount
+        });
+    } catch (error) {
+        return res.status(500).json({ error: error.message });
+    }
+};
