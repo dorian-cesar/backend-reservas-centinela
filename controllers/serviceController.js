@@ -844,3 +844,22 @@ export const updateGeneratedServices = async (req, res) => {
     });
   }
 };
+export const deleteServicesAfterSeptember2026 = async (req, res) => {
+  try {
+    // Define el límite superior del 30 de septiembre de 2026 en UTC
+    const cutoffDate = new Date("2026-09-30T23:59:59.999Z");
+
+    // Borra todos los servicios cuya fecha sea estrictamente mayor al límite
+    const result = await GeneratedService.deleteMany({
+      date: { $gt: cutoffDate }
+    });
+
+    res.json({
+      message: "Servicios posteriores al 30 de septiembre de 2026 eliminados correctamente",
+      deletedCount: result.deletedCount
+    });
+  } catch (error) {
+    console.error("Error en deleteServicesAfterSeptember2026:", error);
+    res.status(500).json({ error: error.message });
+  }
+};
