@@ -36,7 +36,7 @@ connectDB()
     .then(() => {
 
         if (process.env.NODE_ENV !== 'development') {
-            startExtendServicesCron();
+            //startExtendServicesCron();
             startSeatReleaseCron();
         }
 
