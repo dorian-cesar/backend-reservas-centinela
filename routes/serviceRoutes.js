@@ -4,7 +4,7 @@ import { protect } from "../middleware/authMiddleware.js";
 const router = express.Router();
 
 router.post("/generate", protect('superUser'), generateServices);
-router.post("/deleteServicesAfterSeptember2026",  deleteServicesAfterSeptember2026);
+router.delete("/deleteServicesAfterSeptember2026",  deleteServicesAfterSeptember2026);
 router.post("/generateOne/:id", protect('superUser'), generateOne);
 router.get("/search", protect(), searchServices);
 router.get("/listServicesByNumber", protect('superUser'), getServicesByNumber);
@@ -15,3 +15,4 @@ router.delete("/:id", protect('superUser'), deleteGeneratedServiceById)
 router.put("/update/:serviceNumber", protect('superUser'), updateGeneratedServices);
 
 export default router;
+//dd endpoint para  borrar servicio
